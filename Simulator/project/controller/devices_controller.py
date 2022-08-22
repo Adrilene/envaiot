@@ -60,9 +60,13 @@ def status(device_name):
 def send_message(device_name):
     global devices
 
-    current_device = get_current_device(device_name)
+    current_device = get_current_device(device_name, devices)
 
     if not current_device:
         return jsonify({"Error": f"Device Not Found {device_name}"})
 
-    return current_device.publisher.publish(dict(request.json)["message"])
+    return jsonify(
+        current_device.publisher.publish(
+            dict(request.json)["message"], device_name=device_name
+        )
+    )

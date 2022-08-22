@@ -1,5 +1,5 @@
 import pika
-
+import json
 from ..utils.string_operations import get_publishing_routing_key
 from ..service.communication_service import CommunicationService
 
@@ -20,3 +20,4 @@ class DevicePublisher(CommunicationService):
         )
 
         print(f"PUBLISH {device_name} | {message}")
+        return f"{device_name} published in {self.routing_key}"
