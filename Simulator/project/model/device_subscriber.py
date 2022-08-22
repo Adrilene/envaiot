@@ -39,8 +39,9 @@ class DeviceSubscriber(CommunicationService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
+
         ch.basic_ack(delivery_tag=method.delivery_tag)
         body = body.decode("UTF-8")
         body = json.loads(body)
 
-        print(f"Received {body}")
+        print(f"{self.device_name} received {body}")

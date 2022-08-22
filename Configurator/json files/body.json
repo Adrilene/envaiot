@@ -8,21 +8,13 @@
         "available",
         "blocked"
       ],
-      "receivers": [
-        "Smartphone"
-      ],
-      "senders": [
-        "Smartphone"
-      ]
+      "senders": []
     },
     {
       "name": "BabyMonitor",
       "status": [
         "active",
         "inactive"
-      ],
-      "receivers": [
-        "Smartphone"
       ],
       "senders": [
         "Smartphone"
@@ -34,14 +26,7 @@
         "active",
         "inactive"
       ],
-      "receivers": [
-        "BabyMonitor",
-        "SmartTV"
-      ],
-      "senders": [
-        "BabyMonitor",
-        "SmartTV"
-      ]
+      "senders": []
     },
     {
       "name": "SmartLamp",
@@ -49,6 +34,7 @@
         "on",
         "off"
       ],
+      "senders": []
     },
     {
       "name": "Assistant",
@@ -58,7 +44,8 @@
         "busy",
         "available"
       ],
-    },
+      "senders": []
+    }
   ],
   "communication": {
     "interface_type": "broker",

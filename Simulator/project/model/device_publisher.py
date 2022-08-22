@@ -1,6 +1,9 @@
 import pika
 import json
-from ..utils.string_operations import get_publishing_routing_key
+from ..utils.string_operations import (
+    get_publishing_routing_key,
+    get_subscribing_routing_key,
+)
 from ..service.communication_service import CommunicationService
 
 
@@ -9,10 +12,15 @@ class DevicePublisher(CommunicationService):
         CommunicationService.__init__(self, exchange)
         self.routing_key = get_publishing_routing_key(device_name)
 
-    def publish(self, message, device_name):
+    def publish(self, message, device_name, recipient):
+        rk = self.routing_key
+
+        if recipient:
+            rk = get_subscribing_routing_key(recipient)
+
         self.channel.basic_publish(
             exchange=self.exchange,
-            routing_key=self.routing_key,
+            routing_key=rk,
             properties=pika.BasicProperties(
                 delivery_mode=2,
             ),
@@ -20,4 +28,4 @@ class DevicePublisher(CommunicationService):
         )
 
         print(f"PUBLISH {device_name} | {message}")
-        return f"{device_name} published in {self.routing_key}"
+        return f"{device_name} published in {rk}"

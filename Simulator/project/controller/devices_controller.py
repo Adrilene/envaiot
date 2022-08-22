@@ -61,12 +61,18 @@ def send_message(device_name):
     global devices
 
     current_device = get_current_device(device_name, devices)
+    if dict(request.json)["to"]:
+        recipient_device = get_current_device(dict(request.json)["to"], devices)
+        if not recipient_device:
+            return jsonify({"Error": f"Device Not Found {device_name}"})
 
     if not current_device:
         return jsonify({"Error": f"Device Not Found {device_name}"})
 
     return jsonify(
         current_device.publisher.publish(
-            dict(request.json)["message"], device_name=device_name
+            dict(request.json)["message"],
+            device_name=device_name,
+            recipient=dict(request.json)["to"] if dict(request.json)["to"] else None,
         )
     )
