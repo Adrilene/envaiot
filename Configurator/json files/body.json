@@ -1,0 +1,127 @@
+{
+  "devices": [
+    {
+      "name": "SmartTV",
+      "status": [
+        "active",
+        "inactive",
+        "available",
+        "blocked"
+      ],
+      "receivers": [
+        "Smartphone"
+      ],
+      "senders": [
+        "Smartphone"
+      ]
+    },
+    {
+      "name": "BabyMonitor",
+      "status": [
+        "active",
+        "inactive"
+      ],
+      "receivers": [
+        "Smartphone"
+      ],
+      "senders": [
+        "Smartphone"
+      ]
+    },
+    {
+      "name": "Smartphone",
+      "status": [
+        "active",
+        "inactive"
+      ],
+      "receivers": [
+        "BabyMonitor",
+        "SmartTV"
+      ],
+      "senders": [
+        "BabyMonitor",
+        "SmartTV"
+      ]
+    },
+    {
+      "name": "SmartLamp",
+      "status": [
+        "on",
+        "off"
+      ],
+    },
+    {
+      "name": "Assistant",
+      "status": [
+        "active",
+        "inactive",
+        "busy",
+        "available"
+      ],
+    },
+  ],
+  "communication": {
+    "interface_type": "broker",
+    "host": "localhost",
+    "user": "guest",
+    "password": "guest",
+    "port": "15672",
+    "exchange": "exchange_baby_monitor"
+  },
+  "scenarios": {
+    "normal_scenario": [
+      {
+        "topic": "bm_info",
+        "type": "status"
+      }
+    ],
+    "exceptional_scenarios": {
+      "tv_blocked": [
+        {
+          "topic": "st_msg",
+          "type": "notification",
+          "body": "*"
+        },
+        {
+          "topic": "st_info",
+          "type": "status",
+          "body": {
+            "block": true
+          }
+        }
+      ]
+    },
+    "uncertainty_scenarios": {
+      "tv_off": [
+        {
+          "topic": "st_msg",
+          "type": "notification",
+          "body": "*"
+        },
+        {
+          "topic": "bm_info",
+          "type": "notification",
+          "body": "*"
+        },
+        {
+          "topic": "bm_info",
+          "type": "notification",
+          "body": "*"
+        }
+      ]
+    }
+  },
+  "actions": {
+    "adaptation_actions": [
+      {
+        "tv_blocked": "POST {'new_status': 'available'} on http: //localhost:4000/SmartTV/status and wait for $normal_scenario then POST {'new_status': 'available'} on http: //localhost:4000/SmartTV/status"
+      },
+      {
+        "tv_off": [
+          "while not $normal_scenario then POST {'new_status': 'on'} on http: //localhost:4000/SmartLamp/status and wait for 2s and POST {'new_status': 'off'} on http: //localhost:4000/SmartLamp/status",
+          "POST {'new_status': 'play baby shark'} on http: //localhost:4000/Assistant/status"
+        ]
+      }
+    ]
+  }
+}

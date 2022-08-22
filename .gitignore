@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 *.cpython-38.pyc
+
+.vscode

@@ -1,5 +1,4 @@
 from flask import jsonify
-from project import app
 
 
 class Device:
@@ -14,6 +13,6 @@ class Device:
     def set_status(self, new_status):
         if new_status in self.status:
             self.current_status = new_status
-            return jsonify({"received": new_status, "new status": self.status})
+            return jsonify({"received": new_status, "new status": self.current_status})
 
         return jsonify({"error": "Inexistent Status"})

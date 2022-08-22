@@ -1,0 +1,9 @@
+"tv_off":
+  "option 01":
+    - while not normal_scenario
+      - device_04: get invert_status
+      - wait 2s
+
+  "option 02":
+    - device_05: post action "play baby shark"
+  

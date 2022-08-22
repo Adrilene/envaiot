@@ -1,0 +1,45 @@
+{
+    "interface_type": "middleware",
+    "connection_config": {
+        "host": "http://dojot.atlantico.com.br",
+        "user": "gesad",
+        "password": "temppwd",
+        "port": "8000",
+        "topic": "attrs"
+    },
+    "normal_scenario": [{
+        "from": "bm",
+        "type": "status"
+    }],
+    "exceptional_scenario": {
+        "tv_blocked": [{
+                "to": "tv",
+                "type": "notification",
+                "body": "*"
+            },
+            {
+                "from": "tv",
+                "type": "status",
+                "body": { "msg": "locked" }
+            }
+        ]
+    },
+    "adaptation_actions": {
+        "tv_blocked": [{
+            "method": "POST",
+            "url": "http://localhost:5002/change_tv_status",
+            "body": {
+                "lock": false
+            }
+        }]
+    },
+    "return_to_normal_actions": {
+        "tv_blocked": [{
+            "method": "POST",
+            "url": "http://localhost:5002/change_tv_status",
+            "body": {
+                "lock": true
+            }
+        }]
+    }
+}
