@@ -49,10 +49,9 @@
   ],
   "communication": {
     "interface_type": "broker",
-    "host": "localhost",
+    "host": "localhost:15672",
     "user": "guest",
     "password": "guest",
-    "port": "15672",
     "exchange": "exchange_baby_monitor"
   },
   "scenarios": {

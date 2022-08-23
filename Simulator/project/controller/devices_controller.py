@@ -9,9 +9,6 @@ devices = []
 @app.route("/configure", methods=["POST"])
 def configure():
     global devices
-    # import ipdb
-
-    # ipdb.set_trace()
     devices = []
     for device in request.json["devices"]:
         new_device = Device(

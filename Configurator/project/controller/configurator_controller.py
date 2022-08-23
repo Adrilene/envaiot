@@ -28,4 +28,12 @@ def configure():
         },
     )
 
-    return response_simulator
+    response_observer = requests.post(
+        "http://localhost:5002/configure",
+        json={
+            "communication": configuration["communication"],
+            "scenarios": configuration["scenarios"],
+        },
+    )
+
+    return jsonify("All things set!")
