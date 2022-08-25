@@ -1,7 +1,4 @@
 class MonitorAnalyzeService:
-    # def check_running_scenario(self, message, routing_key, scenarios):
-    #     running_scenario = ''
-
     def check_if_is_normal_scenario(self, message, routing_key, normal_scenarios):
         for scenario in normal_scenarios:
             if message["type"] == scenario["type"] and routing_key == scenario["topic"]:
@@ -16,9 +13,6 @@ class MonitorAnalyzeService:
             if len(messages) < len(scenario):
                 wait = False
                 for i in range(len(messages)):
-                    print(
-                        f"COMPARING {messages[i]} - {routing_keys[i]} and {scenario[i]}"
-                    )
                     if (
                         messages[i]["type"] == scenario[i]["type"]
                         and routing_keys[i] == scenario[i]["topic"]
