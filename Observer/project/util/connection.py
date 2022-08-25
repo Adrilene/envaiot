@@ -13,7 +13,7 @@ def get_bindings(host, user, password, exchange):
     return bindings_result
 
 
-def subscribe_in_all_queues(host, user, password, exchange, queue):
+def subscribe_in_all_queues(host, user, password, exchange, queue, channel):
     bindings = get_bindings(
         host,
         user,
@@ -22,7 +22,7 @@ def subscribe_in_all_queues(host, user, password, exchange, queue):
     )
 
     for bind in bindings:
-        self.channel.queue_bind(
+        channel.queue_bind(
             exchange=bind["source"],
             queue=queue,
             routing_key=bind["routing_key"],

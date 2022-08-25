@@ -26,7 +26,10 @@
         "active",
         "inactive"
       ],
-      "senders": []
+      "senders": [
+        "BabyMonitor",
+        "SmartTV"
+      ]
     },
     {
       "name": "SmartLamp",
@@ -64,12 +67,12 @@
     "exceptional_scenarios": {
       "tv_blocked": [
         {
-          "topic": "st_msg",
+          "topic": "stv_msg",
           "type": "notification",
           "body": "*"
         },
         {
-          "topic": "st_info",
+          "topic": "stv_info",
           "type": "status",
           "body": {
             "block": true
@@ -80,7 +83,7 @@
     "uncertainty_scenarios": {
       "tv_off": [
         {
-          "topic": "st_msg",
+          "topic": "stv_msg",
           "type": "notification",
           "body": "*"
         },

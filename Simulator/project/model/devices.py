@@ -1,9 +1,4 @@
 from flask import jsonify
-from ..utils.string_operations import (
-    get_publishing_routing_key,
-    get_subscribing_routing_key,
-)
-
 from .device_publisher import DevicePublisher
 from .device_subscriber import DeviceSubscriber
 from ..service.communication_service import CommunicationService
