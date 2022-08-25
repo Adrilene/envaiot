@@ -42,7 +42,7 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
         received_messages.append(data)
         received_topics.append(method.routing_key)
         print(f"RECEIVED: {data} from {method.routing_key}")
-        print(received_messages)
+        print(f"{received_messages} - {received_topics}")
 
         exceptional = self.check_adaptation_scenario(
             received_messages,
@@ -55,28 +55,31 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
             self.scenarios["uncertainty_scenarios"],
         )
         if exceptional:
-            if exceptional:
-                if exceptional != "wait":
-                    print(f"I'm on the scenario {exceptional}")
-                    received_messages = []
-                    received_topics = []
-                    # call effector
-                else:
-                    print("I'll wait to define the exceptional scenario")
-            elif self.check_if_is_normal_scenario(
-                data, method.routing_key, self.scenarios["normal_scenario"]
-            ):
-                print("I'm on normal scenario")
-                # call effector to normal
-                pass
+            if exceptional != "wait":
+                print(f"I'm on the scenario {exceptional}")
+                received_messages = []
+                received_topics = []
+                # call effector
+            else:
+                print("I'll wait to define the exceptional scenario")
+        elif self.check_if_is_normal_scenario(
+            data, method.routing_key, self.scenarios["normal_scenario"]
+        ):
+            received_messages = []
+            received_topics = []
+            print("I'm on normal scenario")
+            # call effector to normal
+            pass
 
-            elif uncertainty:
-                if uncertainty != "wait":
-                    print(f"I'm on the scenario {uncertainty}")
-                    received_messages = []
-                    received_topics = []
-                    # call effector to uncertainty
-                else:
-                    print("I'll wait to define the uncertainty scenario")
+        elif uncertainty:
+            if uncertainty != "wait":
+                print(f"I'm on the scenario {uncertainty}")
+                received_messages = []
+                received_topics = []
+                # call effector to uncertainty
+            else:
+                print("I'll wait to define the uncertainty scenario")
         else:
+            received_messages = []
+            received_topics = []
             print("All is normal :)")

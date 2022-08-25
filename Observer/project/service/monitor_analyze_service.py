@@ -2,16 +2,13 @@ class MonitorAnalyzeService:
     # def check_running_scenario(self, message, routing_key, scenarios):
     #     running_scenario = ''
 
-    def check_if_is_normal_scenario(self, message, routing_key, normal_scenario):
-
-        if (
-            message["type"] == normal_scenario["type"]
-            and routing_key == normal_scenario["topic"]
-        ):
-            if normal_scenario["body"] == "*":
-                return True
-            elif message["body"] == normal_scenario["body"]:
-                return True
+    def check_if_is_normal_scenario(self, message, routing_key, normal_scenarios):
+        for scenario in normal_scenarios:
+            if message["type"] == scenario["type"] and routing_key == scenario["topic"]:
+                if scenario["body"] == "*":
+                    return True
+                elif message["body"] == scenario["body"]:
+                    return True
         return False
 
     def check_adaptation_scenario(self, messages, routing_keys, adaptation_scenarios):
@@ -19,6 +16,9 @@ class MonitorAnalyzeService:
             if len(messages) < len(scenario):
                 wait = False
                 for i in range(len(messages)):
+                    print(
+                        f"COMPARING {messages[i]} - {routing_keys[i]} and {scenario[i]}"
+                    )
                     if (
                         messages[i]["type"] == scenario[i]["type"]
                         and routing_keys[i] == scenario[i]["topic"]
@@ -28,6 +28,7 @@ class MonitorAnalyzeService:
                         elif messages[i]["body"] == scenario[i]["body"]:
                             wait = True
                     else:
+                        is_current = False
                         break
                 if wait:
                     return "wait"
@@ -44,6 +45,7 @@ class MonitorAnalyzeService:
                         elif messages[i]["body"] == scenario[i]["body"]:
                             is_current = True
                     else:
+                        is_current = False
                         break
 
                 if is_current:

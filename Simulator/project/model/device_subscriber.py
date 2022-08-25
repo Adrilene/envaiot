@@ -44,4 +44,4 @@ class DeviceSubscriber(CommunicationService, Thread):
         body = body.decode("UTF-8")
         body = json.loads(body)
 
-        print(f"{self.device_name} received {body}")
+        print(f"{self.device_name} received {body} from {method.routing_key}")
