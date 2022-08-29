@@ -101,17 +101,5 @@
       ]
     }
   },
-  "actions": {
-    "adaptation_actions": [
-      {
-        "tv_blocked": "POST {'new_status': 'available'} on http: //localhost:4000/SmartTV/status and wait for $normal_scenario then POST {'new_status': 'available'} on http: //localhost:4000/SmartTV/status"
-      },
-      {
-        "tv_off": [
-          "while not $normal_scenario then POST {'new_status': 'on'} on http: //localhost:4000/SmartLamp/status and wait for 2s and POST {'new_status': 'off'} on http: //localhost:4000/SmartLamp/status",
-          "POST {'new_status': 'play baby shark'} on http: //localhost:4000/Assistant/status"
-        ]
-      }
-    ]
-  }
+  "adaptation_strategies": "IF tv_blocked THEN ( ON SmartTV STATUS available ) IF tv_off THEN ( ON SmartLamp STATUS blink ), ( ON Assistant STATUS play )"
 }
