@@ -41,7 +41,7 @@ def get_devices_list():
 def status(device_name):
     global devices
 
-    current_device = get_current_device(device_name)
+    current_device = get_current_device(device_name, devices)
 
     if not current_device:
         return jsonify({"Error": f"Device Not Found {device_name}"})

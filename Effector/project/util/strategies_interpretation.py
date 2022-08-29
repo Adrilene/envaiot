@@ -53,3 +53,9 @@ def strategies_to_dict(strategies):
         else:
             return "Syntax Error!"
     return strategies_dict
+
+
+actions_dict = strategies_to_dict(
+    "IF tv_blocked THEN ( ON SmartTV STATUS available ) IF tv_off THEN ( ON SmartLamp STATUS blink ), ( ON Assistant STATUS play )"
+)
+print(actions_dict)

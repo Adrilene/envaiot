@@ -20,20 +20,33 @@ def configure():
     future_response = []
 
     future_response.append(pool)
-    response_simulator = requests.post(
-        "http://localhost:5001/configure",
-        json={
-            "devices": configuration["devices"],
-            "exchange": configuration["communication"]["exchange"],
-        },
+    print(
+        requests.post(
+            "http://localhost:5001/configure",
+            json={
+                "devices": configuration["devices"],
+                "exchange": configuration["communication"]["exchange"],
+            },
+        )
     )
 
-    response_observer = requests.post(
-        "http://localhost:5002/configure",
-        json={
-            "communication": configuration["communication"],
-            "scenarios": configuration["scenarios"],
-        },
+    print(
+        requests.post(
+            "http://localhost:5002/configure",
+            json={
+                "communication": configuration["communication"],
+                "scenarios": configuration["scenarios"],
+            },
+        )
+    )
+
+    print(
+        requests.post(
+            "http://localhost:5003/configure",
+            json={
+                "adaptation_strategies": configuration["adaptation_strategies"],
+            },
+        )
     )
 
     return jsonify("All things set!")

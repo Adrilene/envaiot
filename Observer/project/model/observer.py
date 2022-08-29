@@ -1,4 +1,5 @@
 import json
+import requests
 from threading import Thread
 
 from ..service.communication_service import CommunicationService
@@ -7,6 +8,7 @@ from ..util.connection import subscribe_in_all_queues
 
 received_messages = []
 received_topics = []
+has_adapted = False
 
 
 class Observer(CommunicationService, MonitorAnalyzeService, Thread):
@@ -36,11 +38,13 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, data):
-        global received_messages, received_topics
+        global received_messages, received_topics, has_adapted
+
         ch.basic_ack(delivery_tag=method.delivery_tag)
         data = json.loads(data.decode("UTF-8"))
         received_messages.append(data)
         received_topics.append(method.routing_key)
+
         print(f"RECEIVED: {data} from {method.routing_key}")
         print(f"{received_messages} - {received_topics}")
 
@@ -57,26 +61,45 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
         if exceptional:
             if exceptional != "wait":
                 print(f"I'm on the scenario {exceptional}")
-                received_messages = []
-                received_topics = []
-                # call effector
+                print("Calling Effector to adapt...")
+                response = requests.get(
+                    f"http://localhost:5003/adapt?scenario={exceptional}"
+                )
+                if response.status_code == 200:
+                    has_adapted = True
+                    received_messages = []
+                    received_topics = []
+
+                else:
+                    print(f"Effector failed on adapting {exceptional}")
+
             else:
                 print("I'll wait to define the exceptional scenario")
-        elif self.check_if_is_normal_scenario(
-            data, method.routing_key, self.scenarios["normal_scenario"]
+        elif (
+            self.check_if_is_normal_scenario(
+                data, method.routing_key, self.scenarios["normal_scenario"]
+            )
+            and has_adapted
         ):
             received_messages = []
             received_topics = []
-            print("I'm on normal scenario")
-            # call effector to normal
-            pass
+            print("I'm on normal scenario again")
+            print("Calling Effector to return to previous state...")
+            response = requests.get(f"http://localhost:5003/return_to_previous_state")
 
         elif uncertainty:
             if uncertainty != "wait":
                 print(f"I'm on the scenario {uncertainty}")
                 received_messages = []
                 received_topics = []
-                # call effector to uncertainty
+                print("Calling Effector to adapt...")
+                response = requests.get(
+                    f"http://localhost:5003/adapt?scenario={uncertainty}"
+                )
+                if response.status_code == 200:
+                    has_adapted = True
+                else:
+                    print(f"Effector failed on adapting scenario {uncertainty}")
             else:
                 print("I'll wait to define the uncertainty scenario")
         else:
