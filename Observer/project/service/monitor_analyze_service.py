@@ -8,40 +8,39 @@ class MonitorAnalyzeService:
                     return True
         return False
 
+    def compare_scenarios(self, messages, routing_keys, steps):
+        is_same = False
+        for i in range(len(messages)):
+            if i >= len(steps):
+                break
+
+            if (
+                steps[i]["topic"] == routing_keys[i]
+                and steps[i]["type"] == messages[i]["type"]
+            ):
+                if steps[i]["body"] == "*":
+                    is_same = True
+                    continue
+                if steps[i]["body"] == messages[i]["body"]:
+                    is_same = True
+                    continue
+                is_same = False
+            is_same = False
+
+        return is_same
+
     def check_adaptation_scenario(self, messages, routing_keys, adaptation_scenarios):
-        for scenario_name, scenario in adaptation_scenarios.items():
-            if len(messages) < len(scenario):
-                wait = False
-                for i in range(len(messages)):
-                    if (
-                        messages[i]["type"] == scenario[i]["type"]
-                        and routing_keys[i] == scenario[i]["topic"]
-                    ):
-                        if scenario[i]["body"] == "*":
-                            wait = True
-                        elif messages[i]["body"] == scenario[i]["body"]:
-                            wait = True
-                    else:
-                        is_current = False
-                        break
-                if wait:
-                    return "wait"
+        print("--------------------")
+        print(messages)
+        print(routing_keys)
+        print(adaptation_scenarios)
+        print("--------------------")
 
-            if len(messages) == len(scenario):
-                is_current = False
-                for i in range(len(messages)):
-                    if (
-                        messages[i]["type"] == scenario[i]["type"]
-                        and routing_keys[i] == scenario[i]["topic"]
-                    ):
-                        if scenario[i]["body"] == "*":
-                            is_current = True
-                        elif messages[i]["body"] == scenario[i]["body"]:
-                            is_current = True
-                    else:
-                        is_current = False
-                        break
+        for scenario_name, steps in adaptation_scenarios.items():
+            is_same = self.compare_scenarios(messages, routing_keys, steps)
 
-                if is_current:
-                    return scenario_name
-        return False
+            if is_same and len(messages) < len(steps):
+                return "wait"
+
+            if is_same:
+                return scenario_name

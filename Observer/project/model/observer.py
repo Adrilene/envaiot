@@ -65,10 +65,10 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
                 response = requests.get(
                     f"http://localhost:5003/adapt?scenario={exceptional}"
                 )
+                received_messages = []
+                received_topics = []
                 if response.status_code == 200:
                     has_adapted = True
-                    received_messages = []
-                    received_topics = []
 
                 else:
                     print(f"Effector failed on adapting {exceptional}")
