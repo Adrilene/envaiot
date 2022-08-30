@@ -30,12 +30,6 @@ class MonitorAnalyzeService:
         return is_same
 
     def check_adaptation_scenario(self, messages, routing_keys, adaptation_scenarios):
-        print("--------------------")
-        print(messages)
-        print(routing_keys)
-        print(adaptation_scenarios)
-        print("--------------------")
-
         for scenario_name, steps in adaptation_scenarios.items():
             is_same = self.compare_scenarios(messages, routing_keys, steps)
 
