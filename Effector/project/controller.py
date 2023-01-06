@@ -1,4 +1,4 @@
-from ..model.effector import Effector
+from .effector import Effector
 from flask import jsonify, request
 from project import app
 
