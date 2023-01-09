@@ -15,7 +15,7 @@ def index():
 @app.route("/configure", methods=["POST"])
 def configure():
     global effector
-    effector = Effector(request.json["adaptation_strategies"])
+    effector = Effector(request.json["strategies"])
     return jsonify("Effector Configured")
 
 
@@ -23,8 +23,10 @@ def configure():
 def adapt():
     global effector, device, current_status
     scenario = request.args.get("scenario")
-    print(f"Scenario to adpat: {scenario}")
-    device, current_status = effector.adapt(scenario)
+    adapt_type = request.args.get("adapt_type")
+    print(f"Adapting {adapt_type} for {scenario}")
+    
+    device, current_status = effector.adapt(scenario, adapt_type)
     if current_status == "fail":
         return jsonify("Effector Failed"), 500
 
