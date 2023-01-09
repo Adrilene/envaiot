@@ -29,14 +29,14 @@ def strategies_to_dict(strategies):
         if strategies_list[index] == "IF":
             key = strategies_list[index+1]
             strategies_dict[key] = {
-                "adaptive": [],
+                "adaptation": [],
                 "uncertainty": []
             }
             index += 2
             continue
     
         if strategies_list[index] == "THEN":
-            strategies_dict[key]["adaptive"], increment = read_actions(strategies_list[index+1:])
+            strategies_dict[key]["adaptation"], increment = read_actions(strategies_list[index+1:])
             index += increment
             continue
 

@@ -8,7 +8,7 @@ def check_keys(scenarios):
 			if "type" not in scenarios[scenario].keys():
 				errors.append(f"Missing 'type' key for {scenario} scenario")
 		
-		elif scenario == "adaptive":
+		elif scenario == "adaptation":
 			for key, value in scenarios[scenario].items():
 				for action in value:
 					if "sender" not in action.keys():
@@ -76,13 +76,13 @@ def validate_adapter(configuration):
 	if "normal" not in configuration["scenarios"].keys():
 		errors.append("Missing 'normal' key")
 
-	if "adaptive" not in configuration["scenarios"].keys():
-		errors.append("Missing 'adaptive' key")
+	if "adaptation" not in configuration["scenarios"].keys():
+		errors.append("Missing 'adaptation' key")
 
 	errors_keys = check_keys(configuration["scenarios"])
 	errors_strategies = check_strategies(
 		configuration["strategies"],
-		configuration["scenarios"]["adaptive"].keys()
+		configuration["scenarios"]["adaptation"].keys()
 		)
 	if errors_keys:
 		errors.extend(errors_keys)
