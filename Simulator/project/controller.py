@@ -1,7 +1,7 @@
 from project import app
 from flask import jsonify, request
-from ..model.devices import Device
-from ..utils.list_operations import get_current_device
+from .devices import Device
+from .list_operations import get_current_device
 
 devices = []
 
@@ -10,15 +10,20 @@ devices = []
 def configure():
     global devices
     devices = []
-    for device in request.json["devices"]:
-        new_device = Device(
-            device["name"],
-            device["status"],
-            device["senders"],
-            request.json["exchange"],
+    resources = request.json["resources"]
+    """ import ipdb
+    ipdb.set_trace() """
+    for device in resources.keys():
+        status = resources[device]["status"] + ["active", "inactive"]
+        senders = resources[device]["senders"] + ["active", "inactive"]
+        devices.append(
+            Device(
+                device,
+                status,
+                senders,
+                "envaiot_exchange"
+            )
         )
-
-        devices.append(new_device)
 
     for device in devices:
         device.subscriber.start()
@@ -44,7 +49,7 @@ def status(device_name):
     current_device = get_current_device(device_name, devices)
 
     if not current_device:
-        return jsonify({"Error": f"Device Not Found {device_name}"})
+        return jsonify({"Error": f"Device Not Found {device_name}"}), 400
 
     if request.method == "GET":
         return current_device.get_status()
@@ -61,10 +66,10 @@ def send_message(device_name):
     if "to" in dict(request.json).keys():
         recipient_device = get_current_device(dict(request.json)["to"], devices)
         if not recipient_device:
-            return jsonify({"Error": f"Device Not Found {device_name}"})
+            return jsonify({"Error": f"Device Not Found {device_name}"}),400
 
     if not current_device:
-        return jsonify({"Error": f"Device Not Found {device_name}"})
+        return jsonify({"Error": f"Device Not Found {device_name}"}),400
 
     message = {"type": dict(request.json)["type"], "body": dict(request.json)["body"]}
     return jsonify(

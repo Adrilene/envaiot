@@ -1,11 +1,12 @@
 from flask import jsonify
-from .device_publisher import DevicePublisher
-from .device_subscriber import DeviceSubscriber
-from ..service.communication_service import CommunicationService
+from .publisher import DevicePublisher
+from .subscriber import DeviceSubscriber
+from .communication_service import CommunicationService
 
 
 class Device:
     def __init__(self, name, status, senders, exchange):
+        print(name, status, senders, exchange)
         self.name = name
         self.status = status
         self.current_status = self.status[0]

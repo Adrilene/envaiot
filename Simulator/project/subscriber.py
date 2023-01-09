@@ -1,6 +1,6 @@
 import json
-from ..service.communication_service import CommunicationService
-from ..utils.string_operations import (
+from .communication_service import CommunicationService
+from .string_operations import (
     get_queue_name,
     get_subscribing_routing_key,
     get_publishing_routing_key,

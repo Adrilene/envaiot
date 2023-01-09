@@ -1,10 +1,10 @@
 import pika
 import json
-from ..utils.string_operations import (
+from .string_operations import (
     get_publishing_routing_key,
     get_subscribing_routing_key,
 )
-from ..service.communication_service import CommunicationService
+from .communication_service import CommunicationService
 
 
 class DevicePublisher(CommunicationService):
