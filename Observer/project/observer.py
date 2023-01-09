@@ -1,106 +1,108 @@
-import pika
-import threading
 import json
-from time import sleep
-from pyrabbit.api import Client
-from project.solution.observer_service import ObserverService
-from project.solution.observer_model import ObserverModel
+import requests
+from threading import Thread
+
+from ..service.communication_service import CommunicationService
+from ..service.monitor_analyze_service import MonitorAnalyzeService
+from ..util.connection import subscribe_in_all_queues
+
+received_messages = []
+received_topics = []
+has_adapted = False
 
 
-class Observer(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host="localhost")
-        )
+class Observer(CommunicationService, MonitorAnalyzeService, Thread):
+    def __init__(self, communication, scenarios):
+        CommunicationService.__init__(self, communication["exchange"])
+        Thread.__init__(self)
+        self.scenarios = scenarios
         self.queue = "observer"
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(self.queue)
-        self.adaptation = False
-        self.steps_to_adapt = None
-        self.steps_for_behave_normal = None
-        self.messages_types = None
-        self.exceptional_scenarios = None
-        self.subscribe_in_all_queues()
-
-    def get_bindings(self):
-        client = Client("localhost:15672", "guest", "guest")
-        bindings = client.get_bindings()
-        bindings_result = []
-
-        for b in bindings:
-            if b["source"] == "exchange_baby_monitor":
-                bindings_result.append(b)
-
-        print('BINDINGS: ', bindings_result)
-        return bindings_result
-
-    def subscribe_in_all_queues(self):
-        bindings = self.get_bindings()
-
-        for bind in bindings:
-            self.channel.queue_bind(
-                exchange=bind["source"],
-                queue=self.queue,
-                routing_key=bind["routing_key"],
-            )
-
-        return bindings
-
-    def callback(self, ch, method, properties, body):
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        print(
-            " [OBSERVER] Receive: %r Data: %r" % (method.routing_key, body)
+        self.declare_queue(self.queue)
+        subscribe_in_all_queues(
+            communication["host"],
+            communication["user"],
+            communication["password"],
+            communication["exchange"],
+            self.queue,
+            self.channel,
         )
-        body = json.loads(body.decode("UTF-8"))
-        if body['type'] in self.messages_types:
-            self.read_message(body, method.routing_key)
-
-    def define_messages(self, types: list):
-        self.messages_types = types
 
     def run(self):
+        print(f"[*] Starting Observer")
         self.channel.basic_consume(
-            queue=self.queue, on_message_callback=self.callback, auto_ack=False
+            queue=self.queue,
+            on_message_callback=self.callback,
+            auto_ack=False,
         )
 
         self.channel.start_consuming()
 
-    def stop(self):
-        raise SystemExit()
+    def callback(self, ch, method, properties, data):
+        global received_messages, received_topics, has_adapted
 
-    def read_message(self, message, source):
-        # Momento opcional para saber se a adaptação falou
-        # Acho que isso tá no esganando amiga!
-        if message["type"] == "notification":
-            print("OBSERVER - Recebi mensagem de notificação")
-            if self.adaptation:
-                print("OBSERVER - Minha adaptação falhou")
-                ObserverService(ObserverModel).insert_data({"success": False})
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        data = json.loads(data.decode("UTF-8"))
+        received_messages.append(data)
+        received_topics.append(method.routing_key)
 
-        # Momento de voltar ao normal
-        if message["type"] == "confirmation":
-            if self.adaptation:
-                print("OBSERVER - Minha adaptação deu certo")
-                ObserverService(ObserverModel).insert_data({"success": True})
-                self.adaptation = False
-                self.return_normal_behave()
+        print(f"RECEIVED: {data} from {method.routing_key}")
+        print(f"{received_messages} - {received_topics}")
 
-    [{"type_msg": "action"}, {"type_msg": "action"}, ...]
+        exceptional = self.check_adaptation_scenario(
+            received_messages,
+            received_topics,
+            self.scenarios["exceptional_scenarios"],
+        )
+        uncertainty = self.check_adaptation_scenario(
+            received_messages,
+            received_topics,
+            self.scenarios["uncertainty_scenarios"],
+        )
+        if exceptional:
+            if exceptional != "wait":
+                print(f"I'm on the scenario {exceptional}")
+                print("Calling Effector to adapt...")
+                response = requests.get(
+                    f"http://localhost:5003/adapt?scenario={exceptional}"
+                )
+                received_messages = []
+                received_topics = []
+                if response.status_code == 200:
+                    has_adapted = True
 
-        # Momento da adaptação
-        if message["type"] == "status" and source == "st_info" and message["block"]:
-            print("OBSERVER - Vou desbloquear a TV")
-            self.adaptation = True
-            self.adaptation_action()
+                else:
+                    print(f"Effector failed on adapting {exceptional}")
 
-    def adaptation_action(self):
-        for function, params in self.steps_to_adapt:
-            function(*params)
-        sleep(1)
-        socketio.emit('successAdapter')
+            else:
+                print("I'll wait to define the exceptional scenario")
+        elif (
+            self.check_if_is_normal_scenario(
+                data, method.routing_key, self.scenarios["normal_scenario"]
+            )
+            and has_adapted
+        ):
+            received_messages = []
+            received_topics = []
+            print("I'm on normal scenario again")
+            print("Calling Effector to return to previous state...")
+            response = requests.get(f"http://localhost:5003/return_to_previous_state")
 
-    def return_normal_behave(self):
-        for function, params in self.steps_for_behave_normal:
-            function(*params)
-
+        elif uncertainty:
+            if uncertainty != "wait":
+                print(f"I'm on the scenario {uncertainty}")
+                received_messages = []
+                received_topics = []
+                print("Calling Effector to adapt...")
+                response = requests.get(
+                    f"http://localhost:5003/adapt?scenario={uncertainty}"
+                )
+                if response.status_code == 200:
+                    has_adapted = True
+                else:
+                    print(f"Effector failed on adapting scenario {uncertainty}")
+            else:
+                print("I'll wait to define the uncertainty scenario")
+        else:
+            received_messages = []
+            received_topics = []
+            print("All is normal :)")
