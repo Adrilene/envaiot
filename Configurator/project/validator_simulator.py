@@ -26,9 +26,9 @@ def check_devices_keys(resources):
 def check_senders(resources):
 	errors = []
 
-	for device in resources:
-		if device["senders"]:
-			for sender in device["senders"]:
+	for device in resources.keys():
+		if resources[device]["senders"]:
+			for sender in resources[device]["senders"]:
 				if sender not in resources.keys():
 					errors.append(f"Device {sender} does not exist.")
 
@@ -45,16 +45,16 @@ def validate_simulator(configuration):
 
 	errors_for_devices_names = check_devices_names(configuration['resources'].keys())
 	errors_for_devices_keys = check_devices_keys(configuration["resources"])
-	errors_for_senders = check_senders(configuration["resources"])
 	
 	if (errors_for_devices_names):
 		errors.extend(errors_for_devices_names)
 
 	if (errors_for_devices_keys):
 		errors.extend(errors_for_devices_keys)
-
-	if (errors_for_senders):
-		errors.extend(errors_for_senders)
+	else: 
+		errors_for_senders = check_senders(configuration["resources"])
+		if (errors_for_senders):
+			errors.extend(errors_for_senders)
 
 	if ("host" not in configuration["communication"].keys()):
 		errors.append("Missing host in communication configuration.")
