@@ -1,50 +1,38 @@
-[
-    {
-        "name": "Smart TV",
-        "id": "device_01",
-        "status": [
-            "active",
-            "inactive",
-            "available",
-            "blocked"
-        ],
+{
+    "resources": {
+        "SmartTV": {
+            "status": [
+                "available",
+                "blocked"
+            ],
+            "senders": []
+        },
+        "BabyMonitor": {
+            "status": [],
+            "senders": []
+        },
+        "Smartphone": {
+            "status": [],
+            "senders": [
+                "BabyMonitor",
+                "SmartTV"
+            ]
+        },
+        "SmartLamp": {
+            "status": [
+                "on",
+                "off"
+            ],
+            "senders": []
+        },
+        "Assistant": {
+            "status": [],
+            "senders": []
+        }
     },
-    {
-        "name": "Baby Monitor",
-        "id": "device_02",
-        "status": [
-            "active",
-            "inactive",
-        ],
-        "routes": [
-            "GET:/status",
-            "POST:/status"
-        ]
-    },
-    {
-        "name": "Smartphone",
-        "id": "device_03",
-        "status": [
-            "active",
-            "inactive",
-        ],
-    },
-    {
-        "name": "Smart Lamp",
-        "id": "device_04",
-        "status": [
-            "on",
-            "off",
-        ],
-    },
-    {
-        "name": "Virtual Assistant",
-        "id": "device_05",
-        "status": [
-            "active",
-            "inactive",
-            "busy",
-            "available"
-        ],
-    },
-]
+    "communication": {
+        "host": "localhost:15672",
+        "user": "guest",
+        "password": "guest"
+    }
+}
