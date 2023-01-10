@@ -3,8 +3,8 @@ def check_keys(scenarios):
 
 	for scenario in scenarios.keys():
 		if scenario == "normal":
-			if "sender" not in scenarios[scenario].keys():
-				errors.append(f"Missing 'sender' key for {scenario} scenario")
+			if "sender" not in scenarios[scenario].keys() and "receiver" not in scenarios[scenario].keys():
+				errors.append(f"Missing 'sender' or 'receiver' key for {scenario} scenario")
 			if "type" not in scenarios[scenario].keys():
 				errors.append(f"Missing 'type' key for {scenario} scenario")
 		

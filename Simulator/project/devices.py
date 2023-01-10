@@ -6,7 +6,6 @@ from .communication_service import CommunicationService
 
 class Device:
     def __init__(self, name, status, senders, exchange):
-        print(name, status, senders, exchange)
         self.name = name
         self.status = status
         self.current_status = self.status[0]

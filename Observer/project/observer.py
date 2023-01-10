@@ -1,28 +1,39 @@
+import os
 import json
-import requests
 from threading import Thread
+from dotenv import load_dotenv
+from copy import deepcopy
 
-from ..service.communication_service import CommunicationService
-from ..service.monitor_analyze_service import MonitorAnalyzeService
-from ..util.connection import subscribe_in_all_queues
+import requests
+
+from .communication_service import CommunicationService
+from .connection import subscribe_in_all_queues
+from .monitor_analyse_service import MonitorAnalyseService
+from .string_operations import (
+    get_sender_routing_key,
+    get_receiver_routing_key,
+    get_exchange_name,
+)
 
 received_messages = []
 received_topics = []
 has_adapted = False
 
+load_dotenv()
 
-class Observer(CommunicationService, MonitorAnalyzeService, Thread):
-    def __init__(self, communication, scenarios):
-        CommunicationService.__init__(self, communication["exchange"])
+
+class Observer(CommunicationService, MonitorAnalyseService, Thread):
+    def __init__(self, communication, scenarios, project_name):
+        CommunicationService.__init__(self, get_exchange_name(project_name))
         Thread.__init__(self)
-        self.scenarios = scenarios
+        self.scenarios = self.get_scenarios(scenarios)
         self.queue = "observer"
         self.declare_queue(self.queue)
         subscribe_in_all_queues(
             communication["host"],
             communication["user"],
             communication["password"],
-            communication["exchange"],
+            get_exchange_name(project_name),
             self.queue,
             self.channel,
         )
@@ -48,61 +59,60 @@ class Observer(CommunicationService, MonitorAnalyzeService, Thread):
         print(f"RECEIVED: {data} from {method.routing_key}")
         print(f"{received_messages} - {received_topics}")
 
-        exceptional = self.check_adaptation_scenario(
-            received_messages,
-            received_topics,
-            self.scenarios["exceptional_scenarios"],
+        adaptation = self.analyse_adaptation_scenario(
+            received_messages, self.scenarios["adaptation"]
         )
-        uncertainty = self.check_adaptation_scenario(
-            received_messages,
-            received_topics,
-            self.scenarios["uncertainty_scenarios"],
-        )
-        if exceptional:
-            if exceptional != "wait":
-                print(f"I'm on the scenario {exceptional}")
-                print("Calling Effector to adapt...")
+
+        if adaptation:
+            if adaptation != "wait" and not has_adapted:
                 response = requests.get(
-                    f"http://localhost:5003/adapt?scenario={exceptional}"
+                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
-                received_messages = []
-                received_topics = []
-                if response.status_code == 200:
-                    has_adapted = True
+                has_adapted = True
+                print(response)
 
-                else:
-                    print(f"Effector failed on adapting {exceptional}")
-
-            else:
-                print("I'll wait to define the exceptional scenario")
         elif (
-            self.check_if_is_normal_scenario(
-                data, method.routing_key, self.scenarios["normal_scenario"]
+            not self.analyse_normal_scenario(
+                received_messages, self.scenarios["normal"]
             )
-            and has_adapted
+            and not has_adapted
         ):
-            received_messages = []
-            received_topics = []
-            print("I'm on normal scenario again")
-            print("Calling Effector to return to previous state...")
-            response = requests.get(f"http://localhost:5003/return_to_previous_state")
+            response = requests.get(
+                f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
+            )
+            has_adapted = True
+            print(response)
 
-        elif uncertainty:
-            if uncertainty != "wait":
-                print(f"I'm on the scenario {uncertainty}")
-                received_messages = []
-                received_topics = []
-                print("Calling Effector to adapt...")
-                response = requests.get(
-                    f"http://localhost:5003/adapt?scenario={uncertainty}"
-                )
-                if response.status_code == 200:
-                    has_adapted = True
-                else:
-                    print(f"Effector failed on adapting scenario {uncertainty}")
-            else:
-                print("I'll wait to define the uncertainty scenario")
         else:
             received_messages = []
             received_topics = []
             print("All is normal :)")
+
+    def get_scenarios(self, scenarios):
+        new_scenarios = deepcopy(scenarios)
+        for key, value in scenarios.items():
+            if key == "normal":
+                if "receiver" in value.keys():
+                    new_scenarios[key]["topic"] = get_receiver_routing_key(new_scenarios[key]["receiver"])
+                    new_scenarios[key].pop("receiver")
+                if "sender" in value.keys():
+                    new_scenarios[key]["topic"] = get_sender_routing_key(new_scenarios[key]["sender"])
+                    new_scenarios[key].pop("sender")
+            
+            elif key == "adaptation":
+                new_scenarios[key] = []
+                for scenario_name in value.keys():
+                    """ import ipdb
+                    ipdb.set_trace() """
+                    for message in value[scenario_name]:
+                        new_message = deepcopy(message)
+                        if "receiver" in message.keys():
+                            new_message["topic"] = get_receiver_routing_key(message["receiver"])
+                            new_message.pop("receiver")
+                        if "sender" in message.keys():
+                            new_message["topic"] = get_sender_routing_key(message["sender"])
+                            new_message.pop("sender")
+                        new_scenarios[key].append(new_message)
+
+        print(new_scenarios)
+        return new_scenarios

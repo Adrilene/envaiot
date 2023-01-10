@@ -2,6 +2,7 @@ from project import app
 from flask import jsonify, request
 from .devices import Device
 from .list_operations import get_current_device
+from .string_operations import get_exchange_name
 
 devices = []
 
@@ -11,8 +12,6 @@ def configure():
     global devices
     devices = []
     resources = request.json["resources"]
-    """ import ipdb
-    ipdb.set_trace() """
     for device in resources.keys():
         status = resources[device]["status"] + ["active", "inactive"]
         senders = resources[device]["senders"] + ["active", "inactive"]
@@ -21,7 +20,7 @@ def configure():
                 device,
                 status,
                 senders,
-                "envaiot_exchange"
+                get_exchange_name(request.json["project"])
             )
         )
 
