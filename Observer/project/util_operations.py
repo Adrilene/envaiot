@@ -12,3 +12,9 @@ def get_receiver_routing_key(device_name):
 
 def get_exchange_name(project_name):
     return f"{project_name.lower().replace(' ', '_')}_exchange"
+
+
+def get_scenario(received_message, received_topic):
+    scenario = received_message
+    scenario["topic"] = received_topic
+    return scenario

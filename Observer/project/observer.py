@@ -9,15 +9,16 @@ import requests
 from .communication_service import CommunicationService
 from .connection import subscribe_in_all_queues
 from .monitor_analyse_service import MonitorAnalyseService
-from .string_operations import (
+from .util_operations import (
     get_sender_routing_key,
     get_receiver_routing_key,
     get_exchange_name,
+    get_scenario,
 )
 
-received_messages = []
-received_topics = []
+scenarios = []
 has_adapted = False
+has_adapted_uncertainty = False
 
 load_dotenv()
 
@@ -49,70 +50,93 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, data):
-        global received_messages, received_topics, has_adapted
+        global scenarios, has_adapted, has_adapted_uncertainty
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
         data = json.loads(data.decode("UTF-8"))
-        received_messages.append(data)
-        received_topics.append(method.routing_key)
+        current_scenario = get_scenario(data, method.routing_key)
+        # scenarios.append(get_scenario(data, method.routing_key))
 
         print(f"RECEIVED: {data} from {method.routing_key}")
-        print(f"{received_messages} - {received_topics}")
 
-        adaptation = self.analyse_adaptation_scenario(
-            received_messages, self.scenarios["adaptation"]
-        )
+        if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
+            if has_adapted:
+                print("Adaptation worked.")
+                scenarios = []
+                has_adapted = False
+                has_adapted_uncertainty = False
 
-        if adaptation:
-            if adaptation != "wait" and not has_adapted:
+            elif has_adapted_uncertainty:
+                print("Adaptation for uncertainty worked.")
+                scenarios = []
+                has_adapted = False
+                has_adapted_uncertainty = False
+            else:
+                print("System is on normal scenario.")
+
+        else:
+            scenarios.append(current_scenario)
+            adaptation = self.analyse_adaptation_scenario(
+                scenarios, self.scenarios["adaptation"]
+            )
+
+            if not adaptation:
+                scenarios = []
+                has_adapted = False
+                has_adapted_uncertainty = False
+
+            elif adaptation == True and not has_adapted:
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
                 has_adapted = True
                 print(response)
 
-        elif (
-            not self.analyse_normal_scenario(
-                received_messages, self.scenarios["normal"]
-            )
-            and not has_adapted
-        ):
-            response = requests.get(
-                f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
-            )
-            has_adapted = True
-            print(response)
-
-        else:
-            received_messages = []
-            received_topics = []
-            print("All is normal :)")
+            elif adaptation == "uncertainty" or (
+                not self.analyse_normal_scenario(
+                    current_scenario, self.scenarios["normal"]
+                )
+                and has_adapted
+            ):
+                response = requests.get(
+                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
+                )
+                has_adapted_uncertainty = True
+                print(response)
 
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)
         for key, value in scenarios.items():
             if key == "normal":
                 if "receiver" in value.keys():
-                    new_scenarios[key]["topic"] = get_receiver_routing_key(new_scenarios[key]["receiver"])
+                    new_scenarios[key]["topic"] = get_receiver_routing_key(
+                        new_scenarios[key]["receiver"]
+                    )
                     new_scenarios[key].pop("receiver")
                 if "sender" in value.keys():
-                    new_scenarios[key]["topic"] = get_sender_routing_key(new_scenarios[key]["sender"])
+                    new_scenarios[key]["topic"] = get_sender_routing_key(
+                        new_scenarios[key]["sender"]
+                    )
                     new_scenarios[key].pop("sender")
-            
+
             elif key == "adaptation":
-                new_scenarios[key] = []
                 for scenario_name in value.keys():
-                    """ import ipdb
-                    ipdb.set_trace() """
+                    """import ipdb
+                    ipdb.set_trace()"""
+                    new_scenarios["adaptation"][scenario_name] = []
                     for message in value[scenario_name]:
                         new_message = deepcopy(message)
                         if "receiver" in message.keys():
-                            new_message["topic"] = get_receiver_routing_key(message["receiver"])
+                            new_message["topic"] = get_receiver_routing_key(
+                                message["receiver"]
+                            )
                             new_message.pop("receiver")
                         if "sender" in message.keys():
-                            new_message["topic"] = get_sender_routing_key(message["sender"])
+                            new_message["topic"] = get_sender_routing_key(
+                                message["sender"]
+                            )
                             new_message.pop("sender")
-                        new_scenarios[key].append(new_message)
+                        new_scenarios["adaptation"][scenario_name].append(new_message)
 
         print(new_scenarios)
         return new_scenarios
