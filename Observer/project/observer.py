@@ -61,7 +61,12 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
         if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
             if has_adapted:
-                print("Adaptation worked.")
+                print(
+                    "Adaptation worked. Returning affected devices to previous state..."
+                )
+                response = requests.get(
+                    f"{os.getenv('EFFECTOR_HOST')}/return_to_previous"
+                )
                 scenarios = []
                 has_adapted = False
                 has_adapted_uncertainty = False
@@ -87,11 +92,14 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 has_adapted_uncertainty = False
 
             elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
-                print(f"Adaptation scenario {adaptation} is occurring. Calling adaptation...")
+                print(
+                    f"Adaptation scenario {adaptation} is occurring. Calling adaptation..."
+                )
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
                 has_adapted = True
+                scenarios = []
                 print(response)
 
             elif adaptation == "uncertainty" or (
@@ -100,11 +108,14 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 )
                 and has_adapted
             ):
-                print(f"Uncertainty scenario {adaptation} is occurring. Calling adaptation...")
+                print(
+                    f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
+                )
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
                 )
                 has_adapted_uncertainty = True
+                scenarios = []
                 print(response)
 
     def get_scenarios(self, scenarios):
@@ -124,8 +135,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
             elif key == "adaptation":
                 for scenario_name in value.keys():
-                    """import ipdb
-                    ipdb.set_trace()"""
                     new_scenarios["adaptation"][scenario_name] = []
                     for message in value[scenario_name]:
                         new_message = deepcopy(message)

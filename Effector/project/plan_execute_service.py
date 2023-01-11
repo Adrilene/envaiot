@@ -11,7 +11,7 @@ class PlanExecuteService:
             print(f"{device} - {status}")
             print("-----------")
             response = requests.get(f"{os.getenv('SIMULATOR_HOST')}/{device}/status")
-            if response.json()["status"] == "active":
+            if response.json()["status"] != "inactive":
                 action_result = self.execute(device, status)
                 print(f"Action performed on {device} and the result is {action_result}")
                 return device, response.json()["status"]

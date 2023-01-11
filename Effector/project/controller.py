@@ -33,7 +33,7 @@ def adapt():
     return jsonify("Effector Successful"), 200
 
 
-@app.route("/return_to_previous_state", methods=["GET"])
+@app.route("/return_to_previous", methods=["GET"])
 def return_to_previous_state():
     global effector, device, current_status
 
