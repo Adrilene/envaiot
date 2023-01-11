@@ -81,11 +81,13 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             )
 
             if not adaptation:
+                print("No adaptation scenario detected.")
                 scenarios = []
                 has_adapted = False
                 has_adapted_uncertainty = False
 
-            elif adaptation == True and not has_adapted:
+            elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
+                print(f"Adaptation scenario {adaptation} is occurring. Calling adaptation...")
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
@@ -98,6 +100,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 )
                 and has_adapted
             ):
+                print(f"Uncertainty scenario {adaptation} is occurring. Calling adaptation...")
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
                 )

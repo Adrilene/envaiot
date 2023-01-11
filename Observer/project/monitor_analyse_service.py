@@ -7,22 +7,29 @@ class MonitorAnalyseService:
             return True
         return False
 
+    def compare_scenarios(self, current_scenario, adaptation_scenario):
+        equal_number = 0
+
+        for key in current_scenario.keys():
+            if key in adaptation_scenario:
+                if current_scenario[key] == adaptation_scenario[key]:
+                    equal_number += 1
+
+        if equal_number == len(adaptation_scenario.keys()):
+            return True
+        return False
+
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
-        """ import ipdb
-        ipdb.set_trace() """
+        
         for scenario in adaptation_scenario:
             if len(current_scenario) < len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
-                    if 'body' not in adaptation_scenario[scenario][i].keys():
-                        current_scenario[i].pop('body')
-
-                    if current_scenario[i] != adaptation_scenario[scenario][i]:
-                        return False
-                return "wait"
-
+                    if self.compare_scenarios(current_scenario[i], adaptation_scenario[scenario][i]):
+                        return "wait"
+                    return False
             if len(current_scenario) >= len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
-                    if current_scenario[i] != adaptation_scenario[scenario][i]:
+                    if not self.compare_scenarios(current_scenario[i], adaptation_scenario[scenario][i]):
                         return False
                 if len(current_scenario) > len(adaptation_scenario[scenario]):
                     return "uncertainty"
