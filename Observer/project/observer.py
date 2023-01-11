@@ -98,7 +98,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 response = requests.get(
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
-                has_adapted = True
+                has_adapted = adaptation
                 if response.status_code == 200:
                     scenarios = []
                 print(response)
@@ -113,7 +113,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                     f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
                 )
                 response = requests.get(
-                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
+                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={has_adapted}&adapt_type=uncertainty"
                 )
                 has_adapted_uncertainty = True
                 scenarios = []
