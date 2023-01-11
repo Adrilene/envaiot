@@ -29,6 +29,8 @@ class MonitorAnalyseService:
                     return False
             if len(current_scenario) >= len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
+                    if i >= len(adaptation_scenario[scenario]):
+                        break
                     if not self.compare_scenarios(current_scenario[i], adaptation_scenario[scenario][i]):
                         return False
                 if len(current_scenario) > len(adaptation_scenario[scenario]):

@@ -99,7 +99,8 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                     f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
                 )
                 has_adapted = True
-                scenarios = []
+                if response.status_code == 200:
+                    scenarios = []
                 print(response)
 
             elif adaptation == "uncertainty" or (
