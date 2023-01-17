@@ -26,7 +26,11 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
-    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        filename="Logs/logs.txt",
+        level=logging.INFO,
+        format="%(asctime)s %(message)s"
+    )
     try:
         open("logs.txt", "x")
     except:
@@ -45,14 +49,18 @@ def configure_simulator():
     )
     if result.status_code == 200:
         logging.info(f"{current_time} | Simulator configurated with:")
-        logging.info(f"\t {configuration}")
+        logging.info(f"{configuration}")
         return jsonify("Simulator set!")
     return result
 
 
 @app.route("/configure_adapter", methods=["POST"])
 def configure_adapter():
-    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        filename="Logs/logs.txt",
+        level=logging.INFO,
+        format="%(asctime)s %(message)s"
+    )
     try:
         open("logs.txt", "x")
     except:
@@ -87,8 +95,8 @@ def configure_adapter():
     if result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
         current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         logging.info(f"{current_time} | Adapter configurated with:")
-        logging.info(f"\t Observer: {observer_configuration}")
-        logging.info(f"\t Effector {effector_configuration}")
+        logging.info(f"Observer: {observer_configuration}")
+        logging.info(f"Effector {effector_configuration}")
         return jsonify("Adapter set!")
 
     response = {}
@@ -99,7 +107,11 @@ def configure_adapter():
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
-    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        filename="Logs/logs.txt",
+        level=logging.INFO,
+        format="%(asctime)s %(message)s"
+    )
     try:
         open("logs.txt", "x")
     except:
@@ -148,9 +160,9 @@ def configure_all():
     ):
         current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         logging.info(f"{current_time} | Starting project {configuration['project']}")
-        logging.info(f"\tSimulator: {simulator_configuration}")
-        logging.info(f"\tObsever: {observer_configuration}")
-        logging.info(f"\tEffector: {effector_configuration}")
+        logging.info(f"Simulator: {simulator_configuration}")
+        logging.info(f"Obsever: {observer_configuration}")
+        logging.info(f"Effector: {effector_configuration}")
         return jsonify("All things set!")
 
     response = {}
