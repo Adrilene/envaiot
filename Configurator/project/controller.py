@@ -1,12 +1,22 @@
+import os
+import logging
+
 from multiprocessing.dummy import Pool
 
-from flask import jsonify, request, make_response
+import requests
+from dotenv import load_dotenv
+from flask import jsonify, request, send_file
 from project import app
-from .requests import request_simulator, request_observer, request_effector
-from .validator_simulator import validate_simulator
+from datetime import datetime
+
+
 from .validator_adapter import validate_adapter
+from .validator_simulator import validate_simulator
 
 devices = []
+
+
+load_dotenv()
 
 
 @app.route("/index", methods=["GET"])
@@ -16,55 +26,85 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
+    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    try:
+        open("logs.txt", "x")
+    except:
+        pass
+
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     errors = validate_simulator(configuration)
-    if (errors):
+    if errors:
         return jsonify(errors), 400
 
     print("Modelling is correct. Starting to configure simulator...")
-    result = request_simulator(configuration)
+    current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    result = requests.post(
+        f"{os.getenv('SIMULATOR_HOST')}/configure", json=configuration
+    )
     if result.status_code == 200:
+        logging.info(f"{current_time} | Simulator configurated with:")
+        logging.info(f"\t {configuration}")
         return jsonify("Simulator set!")
     return result
 
 
 @app.route("/configure_adapter", methods=["POST"])
 def configure_adapter():
+    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    try:
+        open("logs.txt", "x")
+    except:
+        pass
+
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     errors = validate_adapter(configuration)
-    if (errors):
+    if errors:
         return jsonify(errors), 400
 
     print("Modelling is correct. Starting to configure adapter...")
+
     result = {}
-    result["Observer"] = request_observer(
-        {   
-            "project": configuration['project'],
-            "communication": configuration["communication"],
-            "scenarios": configuration["scenarios"],
-        }
+    observer_configuration = {
+        "project": configuration["project"],
+        "communication": configuration["communication"],
+        "scenarios": configuration["scenarios"],
+    }
+    effector_configuration = {
+        "strategies": configuration["strategies"],
+    }
+    result["Observer"] = requests.post(
+        f"{os.getenv('OBSERVER_HOST')}/configure",
+        json=observer_configuration,
     )
-    
-    result["Effector"] = request_effector(
-        {
-            "strategies": configuration["strategies"],
-        }
+    result["Effector"] = requests.post(
+        f"{os.getenv('EFFECTOR_HOST')}/configure",
+        json=effector_configuration,
     )
-    
+
     if result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
-        return jsonify("Adapter set!")    
-    
+        current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        logging.info(f"{current_time} | Adapter configurated with:")
+        logging.info(f"\t Observer: {observer_configuration}")
+        logging.info(f"\t Effector {effector_configuration}")
+        return jsonify("Adapter set!")
+
     response = {}
     for key, value in result.items():
         response[key] = value.json()
     return jsonify(response), 400
 
 
-
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
+    logging.basicConfig(filename="Logs/logs.txt", level=logging.INFO)
+    try:
+        open("logs.txt", "x")
+    except:
+        pass
+
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     pool = Pool(1)
@@ -73,34 +113,59 @@ def configure_all():
 
     future_response.append(pool)
     result = {}
-    result["Simulator"] = request_simulator(
-        {
-            "project": configuration["project"],
-            "resources": configuration["resources"],
-            "communication": configuration["communication"]
-        }
+    simulator_configuration = {
+        "project": configuration["project"],
+        "resources": configuration["resources"],
+        "communication": configuration["communication"],
+    }
+    result["Simulator"] = requests.post(
+        f"{os.getenv('SIMULATOR_HOST')}/configure",
+        json=simulator_configuration,
     )
 
-
-    result["Observer"] = request_observer(
-        {   
-            "project": configuration["project"],
-            "communication": configuration["communication"],
-            "scenarios": configuration["scenarios"],
-        }
+    observer_configuration = {
+        "project": configuration["project"],
+        "communication": configuration["communication"],
+        "scenarios": configuration["scenarios"],
+    }
+    result["Observer"] = requests.post(
+        f"{os.getenv('OBSERVER_HOST')}/configure",
+        json=observer_configuration,
     )
-    
 
-    result["Effector"] = request_effector(
-        {
-            "strategies": configuration["strategies"],
-        }
+    effector_configuration = {
+        "strategies": configuration["strategies"],
+    }
+    result["Effector"] = requests.post(
+        f"{os.getenv('EFFECTOR_HOST')}/configure",
+        json=effector_configuration,
     )
-    
-    if result["Simulator"].status_code == 200 and result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
+
+    if (
+        result["Simulator"].status_code == 200
+        and result["Observer"].status_code == 200
+        and result["Effector"].status_code == 200
+    ):
+        current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        logging.info(f"{current_time} | Starting project {configuration['project']}")
+        logging.info(f"\tSimulator: {simulator_configuration}")
+        logging.info(f"\tObsever: {observer_configuration}")
+        logging.info(f"\tEffector: {effector_configuration}")
         return jsonify("All things set!")
-    
+
     response = {}
     for key, value in result.items():
         response[key] = value.json()
     return jsonify(response), 400
+
+
+@app.route("/validate_scenario", methods=["POST"])
+def validate_scenario():
+    scenarios = list(request.json)
+    for scenario in scenarios:
+        requests.post(
+            f"{os.getenv('SIMULATOR_HOST')}/{scenario['from']}/send_message",
+            json=scenario["message"],
+        )
+
+    return send_file("logs.txt", as_attachment=True)
