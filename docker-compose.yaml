@@ -1,0 +1,29 @@
+version: '2'
+services:
+    configurator:
+        build: ./Configurator
+        ports:
+            - "5000:5000"
+    simulator:
+        build: ./Simulator
+        ports:
+            - "5001:5001"
+    observer:
+        build: ./Observer
+        ports:
+            - "5002:5002"
+    effector:
+        build: ./Effector
+        ports:
+            - "5003:5003"
+    rabbitmq3:
+        container_name: "rabbitmq3"
+        image: rabbitmq:3.8-management-alpine
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=admin
+        ports:
+            # AMQP protocol port
+            - '5672:5672'
+            # HTTP management UI
+            - '15672:15672'
