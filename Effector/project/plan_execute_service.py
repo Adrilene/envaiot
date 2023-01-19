@@ -1,16 +1,11 @@
 import os
 import requests
-import logging
+from project import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 class PlanExecuteService:
     def plan(self, actions):
-        logging.basicConfig(
-            filename="Logs/logs.txt",
-            level=logging.INFO,
-            format="%(asctime)s %(message)s"
-        )
         for action in actions:
             device, status = action.split(":")
             print("-----------")

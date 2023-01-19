@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from copy import deepcopy
 
 import requests
-import logging
+from project import logging
 
 from .communication_service import CommunicationService
 from .connection import subscribe_in_all_queues
@@ -53,11 +53,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
     def callback(self, ch, method, properties, data):
         global scenarios, has_adapted, has_adapted_uncertainty, adaptation
-        logging.basicConfig(
-            filename="Logs/logs.txt",
-            level=logging.INFO,
-            format="%(asctime)s %(message)s"
-        )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         data = json.loads(data.decode("UTF-8"))
         current_scenario = get_scenario(data, method.routing_key)

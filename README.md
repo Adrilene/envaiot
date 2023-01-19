@@ -4,6 +4,7 @@ This repository contains the EnvAIoT tool's code. This tool assists IoT system d
 
 ## Architecture
 Each folder in this repository corresponds to a different component of EnvAIoT. They are as follows:
+
 1. **Configurator**, who is in charge of verifying the model and configuring the other components.
 2. **Simulator**, which is in charge of simulating the operation of the IoT system.
 3. **Observer** and **Effector** collaborate to accomplish the adaptation. The former monitors and analyses the system, whilst the latter plans and executes the adaptation.
@@ -16,6 +17,7 @@ There are three endpoints:
 + */configure_all*, receives the modelling of the entire IoT system. 
 + */configure_simulator*, receives the modelling of the resources and communication parts.
 + */configure_adapter*, receives the modelling of the communication, scenarios and strategies. 
++ */validate_scenario*, receives a sequence of messages for each
 
 The validation procedure begins when a request is received. The names of the devices (which must be in Pascal case), the presence of all keys, and the accuracy of the references in the "senders" key are all checked for the simulator modelling. It examines the modelling of both normal and adaptation scenarios, the presence of the keys, and the accuracy of the names of the adaptation scenarios (pascal case).
 When the validation is finished and it is all correct, Configurator sends a request to each component to configure them. 

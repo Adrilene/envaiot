@@ -1,5 +1,5 @@
 from flask import jsonify
-import logging
+from project import logging
 from .publisher import DevicePublisher
 from .subscriber import DeviceSubscriber
 from .communication_service import CommunicationService
@@ -17,12 +17,6 @@ class Device:
 
     def set_status(self, new_status):
         if new_status in self.status:
-            logging.basicConfig(
-                filename="Logs/logs.txt",
-                level=logging.INFO,
-                format="%(asctime)s %(message)s"
-            )
-
             logging.info(f"{self.name} changed status from {self.current_status} to {new_status}")
             self.current_status = new_status
             return jsonify({"received": new_status, "new status": self.current_status})

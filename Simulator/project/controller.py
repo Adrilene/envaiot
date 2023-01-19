@@ -1,4 +1,4 @@
-import logging
+from project import logging
 
 from project import app
 from flask import jsonify, request
@@ -62,11 +62,6 @@ def status(device_name):
 @app.route("/<device_name>/send_message", methods=["POST"])
 def send_message(device_name):
     global devices
-    logging.basicConfig(
-        filename="Logs/logs.txt",
-        level=logging.INFO,
-        format="%(asctime)s %(message)s"
-    )
 
     current_device = get_current_device(device_name, devices)
     if "to" in dict(request.json).keys():

@@ -1,12 +1,11 @@
 import os
-import logging
 
 from multiprocessing.dummy import Pool
 
 import requests
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
-from project import app
+from project import app, logging
 from time import sleep
 
 
@@ -26,11 +25,6 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
-    logging.basicConfig(
-        filename="Logs/logs.txt",
-        level=logging.INFO,
-        format="%(asctime)s %(message)s"
-    )
     try:
         open("logs.txt", "x")
     except:
@@ -55,11 +49,6 @@ def configure_simulator():
 
 @app.route("/configure_adapter", methods=["POST"])
 def configure_adapter():
-    logging.basicConfig(
-        filename="Logs/logs.txt",
-        level=logging.INFO,
-        format="%(asctime)s %(message)s"
-    )
     try:
         open("logs.txt", "x")
     except:
@@ -105,11 +94,6 @@ def configure_adapter():
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
-    logging.basicConfig(
-        filename="Logs/logs.txt",
-        level=logging.INFO,
-        format="%(asctime)s %(message)s"
-    )
     try:
         open("logs.txt", "x")
     except:
@@ -180,4 +164,4 @@ def validate_scenario():
         
         sleep(2)
 
-    return send_file("/home/adrilene/Desktop/Projects/envaiot/Logs/logs.txt", as_attachment=True)
+    return send_file(os.getenv("LOGS_PATH"), as_attachment=True)
