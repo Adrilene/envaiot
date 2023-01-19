@@ -18,6 +18,7 @@ from .util_operations import (
 )
 
 scenarios = []
+adaptation = ''
 has_adapted = False
 has_adapted_uncertainty = False
 
@@ -51,7 +52,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, data):
-        global scenarios, has_adapted, has_adapted_uncertainty
+        global scenarios, has_adapted, has_adapted_uncertainty, adaptation
         logging.basicConfig(
             filename="Logs/logs.txt",
             level=logging.INFO,
@@ -83,34 +84,44 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 has_adapted_uncertainty = False
             else:
                 logging.info("System is on normal scenario.")
-
+            
         else:
-            scenarios.append(current_scenario)
-            adaptation = self.analyse_adaptation_scenario(
-                scenarios, self.scenarios["adaptation"]
-            )
-        
-            if adaptation == False or adaptation == "wait":
-                logging.info("No adaptation scenario detected.")            elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
-                logging.info(
-                    f"Adaptation scenario {adaptation} is occurring. Calling adaptation..."
-                )
+            if has_adapted:
+                logging.info("Adaptation failed. System is under an uncertainty scenario.")
                 response = requests.get(
-                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
+                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
                 )
-                has_adapted = adaptation
-                if response.status_code == 200:
-                    scenarios = []
+            
+            else:
+                scenarios.append(current_scenario)
+                adaptation = self.analyse_adaptation_scenario(
+                    scenarios, self.scenarios["adaptation"]
+                )
+            
+                if adaptation == False or adaptation == "wait":
+                    logging.info("No adaptation scenario detected.")
 
-            elif adaptation == "uncertainty" and has_adapted:
-                logging.info(
-                    f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
-                )
-                response = requests.get(
-                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={has_adapted}&adapt_type=uncertainty"
-                )
-                has_adapted_uncertainty = True
-                scenarios = []
+                
+                elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
+                    logging.info(
+                        f"Adaptation scenario {adaptation} is occurring. Calling adaptation..."
+                    )
+                    response = requests.get(
+                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
+                    )
+                    has_adapted = adaptation
+                    if response.status_code == 200:
+                        scenarios = []
+
+                elif adaptation == "uncertainty" and has_adapted:
+                    logging.info(
+                        f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
+                    )
+                    response = requests.get(
+                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={has_adapted}&adapt_type=uncertainty"
+                    )
+                    has_adapted_uncertainty = True
+                    scenarios = []
 
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)
@@ -144,5 +155,5 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             new_message.pop("sender")
                         new_scenarios["adaptation"][scenario_name].append(new_message)
         
-
+        print(new_scenarios)
         return new_scenarios
