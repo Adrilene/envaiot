@@ -1,0 +1,61 @@
+{
+	"project": "Baby Monitor Project",
+	"resources": {
+		"SmartTV": {
+			"status": [
+				"available",
+				"blocked"
+			],
+			"senders": []
+		},
+		"BabyMonitor": {
+			"status": [],
+			"senders": []
+		},
+		"Smartphone": {
+			"status": [],
+			"senders": [
+				"BabyMonitor",
+				"SmartTV"
+			]
+		},
+		"SmartLamp": {
+			"status": [
+				"on",
+				"off"
+			],
+			"senders": []
+		},
+		"Assistant": {
+			"status": [],
+			"senders": []
+		}
+	},
+	"communication": {
+		"user": "guest",
+		"host": "localhost:15672",
+		"password": "guest"
+	},
+	"scenarios": {
+		"normal": {
+			"sender": "BabyMonitor",
+			"type": "status"
+		},
+		"adaptation": {
+			"TVBlocked": [
+				{
+					"sender": "Smartphone",
+					"type": "notification"
+				},
+				{
+					"sender": "SmartTV",
+					"type": "status",
+					"body": {
+						"block": true
+					}
+				}
+			]
+		}
+	},
+	"strategies": "IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON SmartLamp STATUS blink ON Assistant STATUS play"
+}
