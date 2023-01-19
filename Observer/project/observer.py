@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from copy import deepcopy
 
 import requests
+import logging
 
 from .communication_service import CommunicationService
 from .connection import subscribe_in_all_queues
@@ -51,17 +52,21 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
     def callback(self, ch, method, properties, data):
         global scenarios, has_adapted, has_adapted_uncertainty
-
+        logging.basicConfig(
+            filename="Logs/logs.txt",
+            level=logging.INFO,
+            format="%(asctime)s %(message)s"
+        )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         data = json.loads(data.decode("UTF-8"))
         current_scenario = get_scenario(data, method.routing_key)
         # scenarios.append(get_scenario(data, method.routing_key))
 
-        print(f"RECEIVED: {data} from {method.routing_key}")
+        logging.info(f"Observer received: {data} from {method.routing_key}")
 
         if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
             if has_adapted:
-                print(
+                logging.info(
                     "Adaptation worked. Returning affected devices to previous state..."
                 )
                 response = requests.get(
@@ -72,27 +77,22 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 has_adapted_uncertainty = False
 
             elif has_adapted_uncertainty:
-                print("Adaptation for uncertainty worked.")
+                logging.info("Adaptation for uncertainty worked.")
                 scenarios = []
                 has_adapted = False
                 has_adapted_uncertainty = False
             else:
-                print("System is on normal scenario.")
+                logging.info("System is on normal scenario.")
 
         else:
             scenarios.append(current_scenario)
             adaptation = self.analyse_adaptation_scenario(
                 scenarios, self.scenarios["adaptation"]
             )
-
-            if not adaptation:
-                print("No adaptation scenario detected.")
-                scenarios = []
-                has_adapted = False
-                has_adapted_uncertainty = False
-
-            elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
-                print(
+        
+            if adaptation == False or adaptation == "wait":
+                logging.info("No adaptation scenario detected.")            elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
+                logging.info(
                     f"Adaptation scenario {adaptation} is occurring. Calling adaptation..."
                 )
                 response = requests.get(
@@ -101,15 +101,9 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 has_adapted = adaptation
                 if response.status_code == 200:
                     scenarios = []
-                print(response)
 
-            elif adaptation == "uncertainty" or (
-                not self.analyse_normal_scenario(
-                    current_scenario, self.scenarios["normal"]
-                )
-                and has_adapted
-            ):
-                print(
+            elif adaptation == "uncertainty" and has_adapted:
+                logging.info(
                     f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
                 )
                 response = requests.get(
@@ -117,7 +111,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                 )
                 has_adapted_uncertainty = True
                 scenarios = []
-                print(response)
 
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)
@@ -150,6 +143,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             )
                             new_message.pop("sender")
                         new_scenarios["adaptation"][scenario_name].append(new_message)
+        
 
-        print(new_scenarios)
         return new_scenarios

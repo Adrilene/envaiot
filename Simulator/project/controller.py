@@ -1,3 +1,5 @@
+import logging
+
 from project import app
 from flask import jsonify, request
 from .devices import Device
@@ -14,7 +16,7 @@ def configure():
     resources = request.json["resources"]
     for device in resources.keys():
         status = resources[device]["status"] + ["active", "inactive"]
-        senders = resources[device]["senders"] + ["active", "inactive"]
+        senders = resources[device]["senders"]
         devices.append(
             Device(
                 device,
@@ -60,6 +62,11 @@ def status(device_name):
 @app.route("/<device_name>/send_message", methods=["POST"])
 def send_message(device_name):
     global devices
+    logging.basicConfig(
+        filename="Logs/logs.txt",
+        level=logging.INFO,
+        format="%(asctime)s %(message)s"
+    )
 
     current_device = get_current_device(device_name, devices)
     if "to" in dict(request.json).keys():
@@ -71,6 +78,11 @@ def send_message(device_name):
         return jsonify({"Error": f"Device Not Found {device_name}"}),400
 
     message = {"type": dict(request.json)["type"], "body": dict(request.json)["body"]}
+    if not "to" in dict(request.json).keys():
+        logging.info(f"{device_name} published {message}")
+    else:
+        logging.info(f"{device_name} sent {message} to {request.json['to']}")
+        
     return jsonify(
         current_device.publisher.publish(
             message,

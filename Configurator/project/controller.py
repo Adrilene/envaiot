@@ -7,7 +7,7 @@ import requests
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
 from project import app
-from datetime import datetime
+from time import sleep
 
 
 from .validator_adapter import validate_adapter
@@ -43,12 +43,11 @@ def configure_simulator():
         return jsonify(errors), 400
 
     print("Modelling is correct. Starting to configure simulator...")
-    current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
     result = requests.post(
         f"{os.getenv('SIMULATOR_HOST')}/configure", json=configuration
     )
     if result.status_code == 200:
-        logging.info(f"{current_time} | Simulator configurated with:")
+        logging.info(f"Simulator configurated with:")
         logging.info(f"{configuration}")
         return jsonify("Simulator set!")
     return result
@@ -93,8 +92,7 @@ def configure_adapter():
     )
 
     if result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
-        current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-        logging.info(f"{current_time} | Adapter configurated with:")
+        logging.info(f"Adapter configurated with:")
         logging.info(f"Observer: {observer_configuration}")
         logging.info(f"Effector {effector_configuration}")
         return jsonify("Adapter set!")
@@ -158,8 +156,8 @@ def configure_all():
         and result["Observer"].status_code == 200
         and result["Effector"].status_code == 200
     ):
-        current_time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-        logging.info(f"{current_time} | Starting project {configuration['project']}")
+
+        logging.info(f"Starting project {configuration['project']}")
         logging.info(f"Simulator: {simulator_configuration}")
         logging.info(f"Obsever: {observer_configuration}")
         logging.info(f"Effector: {effector_configuration}")
@@ -179,5 +177,7 @@ def validate_scenario():
             f"{os.getenv('SIMULATOR_HOST')}/{scenario['from']}/send_message",
             json=scenario["message"],
         )
+        
+        sleep(2)
 
-    return send_file("logs.txt", as_attachment=True)
+    return send_file("/home/adrilene/Desktop/Projects/envaiot/Logs/logs.txt", as_attachment=True)

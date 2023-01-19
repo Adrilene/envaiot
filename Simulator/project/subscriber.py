@@ -1,4 +1,5 @@
 import json
+import logging
 from .communication_service import CommunicationService
 from .string_operations import (
     get_queue_name,
@@ -39,9 +40,13 @@ class DeviceSubscriber(CommunicationService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-
+        logging.basicConfig(
+            filename="Logs/logs.txt",
+            level=logging.INFO,
+            format="%(asctime)s %(message)s"
+        )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         body = body.decode("UTF-8")
         body = json.loads(body)
 
-        print(f"{self.device_name} received {body} from {method.routing_key}")
+        logging.info(f"{self.device_name} received {body} from {method.routing_key}")
