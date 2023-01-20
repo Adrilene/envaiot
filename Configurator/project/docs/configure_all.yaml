@@ -1,0 +1,16 @@
+Configure all EnvAIoT components
+---
+
+parameters:
+  - in: body
+    name: body
+    description: Receives the modeling of all components.
+    required: true
+    schema:
+      type: object
+      properties:
+        project: Name of the project
+responses: 
+  200: 
+    description: A json informing that the service is running.
+

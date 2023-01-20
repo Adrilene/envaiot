@@ -5,7 +5,8 @@ from multiprocessing.dummy import Pool
 import requests
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
-from project import app, logging
+from project import app, logging, swagger
+from flasgger import swag_from
 from time import sleep
 
 
@@ -19,6 +20,7 @@ load_dotenv()
 
 
 @app.route("/index", methods=["GET"])
+@swag_from("./docs/index.yaml")
 def index():
     return jsonify({"msg": "ok"})
 
@@ -93,6 +95,7 @@ def configure_adapter():
 
 
 @app.route("/configure_all", methods=["POST"])
+@swag_from("./docs/configure_all.yaml")
 def configure_all():
     try:
         open("logs.txt", "x")
