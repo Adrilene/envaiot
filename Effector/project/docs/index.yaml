@@ -1,0 +1,6 @@
+Route to check service is running.
+---
+responses: 
+  200: 
+    description: A json informing that the service is running.
+

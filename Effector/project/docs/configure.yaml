@@ -1,0 +1,12 @@
+Configure all EnvAIoT components
+---
+
+parameters:
+  - in: body
+    name: strategies
+    type: string
+    
+responses: 
+  200: 
+    description: A json informing that the service is running.
+

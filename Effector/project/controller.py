@@ -1,6 +1,7 @@
 from .effector import Effector
 from flask import jsonify, request
 from project import app
+from flasgger import swag_from
 
 
 effector = None
@@ -13,6 +14,7 @@ def index():
 
 
 @app.route("/configure", methods=["POST"])
+@swag_from("./docs/configure.yaml")
 def configure():
     global effector
     effector = Effector(request.json["strategies"])
