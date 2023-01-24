@@ -7,10 +7,24 @@ def read_actions(actions):
             break
         
         if actions[index] == "ON":
-            actions_list.append(
-                f"{actions[index+1]}:{actions[index+3]}"
-            )
-            index+=4
+            if actions[index+2] == "STATUS":
+                actions_list.append(
+                    f"{actions[index+1]}:{actions[index+2]}:{actions[index+3]}"
+                )
+                index+=4
+            elif actions[index+2] == "MESSAGE":
+                body = ''
+                i = index + 3
+                while i < len(actions):
+                    if actions[i].isupper():
+                        break
+                    body += f"{actions[i]} "
+                    i += 1
+                
+                actions_list.append(
+                    f"{actions[index+1]}:{actions[index+2]}:{body}"
+                )
+                index = i
             continue
 
         if actions[index] == "OTHERWISE":
@@ -49,8 +63,7 @@ def strategies_to_dict(strategies):
 
     return strategies_dict
 
-""" actions_dict = strategies_to_dict(
-    "IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON SmartLamp STATUS blink ON Assistant STATUS play"
-)
-print(actions_dict)
- """
+# actions_dict = strategies_to_dict(
+#     "IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON Assistant MESSAGE 'The baby needs attention' ON SmartLamp STATUS blink"
+# )
+# print(actions_dict)

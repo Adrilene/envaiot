@@ -17,8 +17,8 @@ from .util_operations import (
     get_scenario,
 )
 
-scenarios = []
-adaptation = ''
+scenarios_sequence = []
+adaptation_scenario = ""
 has_adapted = False
 has_adapted_uncertainty = False
 
@@ -52,78 +52,62 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, data):
-        global scenarios, has_adapted, has_adapted_uncertainty, adaptation
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        global scenarios_sequence, has_adapted, has_adapted_uncertainty, adaptation_scenario
+        
         data = json.loads(data.decode("UTF-8"))
         current_scenario = get_scenario(data, method.routing_key)
-        # scenarios.append(get_scenario(data, method.routing_key))
 
         logging.info(f"Observer received: {data} from {method.routing_key}")
 
         if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
-            if has_adapted:
-                logging.info(
-                    "Adaptation worked. Returning affected devices to previous state..."
-                )
-                response = requests.get(
-                    f"{os.getenv('EFFECTOR_HOST')}/return_to_previous"
-                )
-                scenarios = []
+            if has_adapted or has_adapted_uncertainty:
+                logging.info("Adaptation worked successfully.")
                 has_adapted = False
                 has_adapted_uncertainty = False
-
-            elif has_adapted_uncertainty:
-                logging.info("Adaptation for uncertainty worked.")
-                scenarios = []
-                has_adapted = False
-                has_adapted_uncertainty = False
-            else:
-                logging.info("System is on normal scenario.")
-            
+                scenarios_sequence = []
+            logging.info("System is under a normal scenario.")
         else:
-            if has_adapted:
-                logging.info("Adaptation failed. System is under an uncertainty scenario.")
-                response = requests.get(
-                    f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=uncertainty"
-                )
-            
-            else:
-                scenarios.append(current_scenario)
-                adaptation = self.analyse_adaptation_scenario(
-                    scenarios, self.scenarios["adaptation"]
-                )
-            
-                if adaptation == False or adaptation == "wait":
-                    logging.info("No adaptation scenario detected.")
+            scenarios_sequence.append(current_scenario)
 
-                
-                elif adaptation in self.scenarios["adaptation"].keys() and not has_adapted:
-                    logging.info(
-                        f"Adaptation scenario {adaptation} is occurring. Calling adaptation..."
-                    )
+            if adaptation != "wait" and adaptation != False:
+                if adaptation != "uncertainty":
+                    logging.info(f"Scenario {adaptation} detected.")
+                    adaptation_scenario = adaptation
                     response = requests.get(
-                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation}&adapt_type=adaptation"
+                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=adaptation"
                     )
-                    has_adapted = adaptation
+                    has_adapted = True
                     if response.status_code == 200:
-                        scenarios = []
+                        logging.info(f"Adapted for {adaptation_scenario}")
+                    else:
+                        logging.info(f"Uncertainty detected for {adaptation_scenario}")
+                        response = requests.get(
+                            f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
+                        )
+                        has_adapted_uncertainty = True
+                        scenarios_sequence = []
+                        if response.status_code == 200:
+                            logging.info(
+                                f"Adapted uncertainty for {adaptation_scenario}"
+                            )
 
-                elif adaptation == "uncertainty" and has_adapted:
-                    logging.info(
-                        f"Uncertainty scenario {adaptation} is occurring. Calling adaptation..."
-                    )
+                else:
+                    logging.info(f"Uncertainty detected for {adaptation_scenario}")
                     response = requests.get(
-                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={has_adapted}&adapt_type=uncertainty"
+                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
                     )
                     has_adapted_uncertainty = True
-                    scenarios = []
-
+                    if response.status_code == 200:
+                        logging.info(f"Adapted uncertainty for {adaptation_scenario}")
+                    scenarios_sequence = []
+        
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)
         for key, value in scenarios.items():
             if key == "normal":
                 if "receiver" in value.keys():
-                    new_scenarios[key]["topic"] = get_receiver_routing_key(
+                    new_message[key]["topic"] = get_receiver_routing_key(
                         new_scenarios[key]["receiver"]
                     )
                     new_scenarios[key].pop("receiver")
@@ -132,6 +116,9 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                         new_scenarios[key]["sender"]
                     )
                     new_scenarios[key].pop("sender")
+
+                new_message = new_scenarios[key]
+                new_scenarios[key] = [new_message]
 
             elif key == "adaptation":
                 for scenario_name in value.keys():
@@ -149,6 +136,5 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             )
                             new_message.pop("sender")
                         new_scenarios["adaptation"][scenario_name].append(new_message)
-        
-        print(new_scenarios)
+
         return new_scenarios

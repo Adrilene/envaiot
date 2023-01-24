@@ -1,10 +1,11 @@
 class MonitorAnalyseService:
     def analyse_normal_scenario(self, current_scenario, normal_scenario):
-        if (
-            current_scenario["topic"] == normal_scenario["topic"]
-            and current_scenario["type"] == normal_scenario["type"]
-        ):
-            return True
+        for scenario in normal_scenario:
+            if (
+                current_scenario["type"] == scenario["type"]
+                and current_scenario["topic"] == scenario["topic"]
+            ):
+                return True
         return False
 
     def compare_scenarios(self, current_scenario, adaptation_scenario):
@@ -20,20 +21,39 @@ class MonitorAnalyseService:
         return False
 
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
-        
+
         for scenario in adaptation_scenario:
             if len(current_scenario) < len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
-                    if self.compare_scenarios(current_scenario[i], adaptation_scenario[scenario][i]):
+                    if self.compare_scenarios(
+                        current_scenario[i], adaptation_scenario[scenario][i]
+                    ):
                         return "wait"
                     return False
             if len(current_scenario) >= len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
                     if i >= len(adaptation_scenario[scenario]):
                         break
-                    if not self.compare_scenarios(current_scenario[i], adaptation_scenario[scenario][i]):
+                    if not self.compare_scenarios(
+                        current_scenario[i], adaptation_scenario[scenario][i]
+                    ):
                         return False
                 if len(current_scenario) > len(adaptation_scenario[scenario]):
                     return "uncertainty"
                 return scenario
             return False
+
+
+# adaptation = {
+#     "TVBlocked": [
+#         {"type": "notification", "topic": "stv_msg"},
+#         {"type": "status", "body": {"block": True}, "topic": "stv_info"},
+#     ]
+# }
+# sequence = [
+#     {"type": "notification", "body": "The baby needs attention", "topic": "stv_msg"},
+#     {"type": "status", "body": {"block": True}, "topic": "stv_info"}
+# ]
+# normal = [{"type": "status", "topic": "bm_msg"}]
+
+# print(MonitorAnalyseService().analyse_adaptation_scenario(sequence, adaptation))
