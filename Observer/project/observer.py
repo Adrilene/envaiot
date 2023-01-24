@@ -1,21 +1,17 @@
-import os
 import json
-from threading import Thread
-from dotenv import load_dotenv
+import os
 from copy import deepcopy
+from datetime import datetime
+from threading import Thread
 
 import requests
-from project import logging
+from dotenv import load_dotenv
 
 from .communication_service import CommunicationService
 from .connection import subscribe_in_all_queues
 from .monitor_analyse_service import MonitorAnalyseService
-from .util_operations import (
-    get_sender_routing_key,
-    get_receiver_routing_key,
-    get_exchange_name,
-    get_scenario,
-)
+from .util_operations import (get_exchange_name, get_receiver_routing_key,
+                              get_scenario, get_sender_routing_key)
 
 scenarios_sequence = []
 adaptation_scenario = ""
@@ -53,55 +49,59 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
     def callback(self, ch, method, properties, data):
         global scenarios_sequence, has_adapted, has_adapted_uncertainty, adaptation_scenario
-        
+        log_file = open(os.getenv("LOGS_PATH"), "a")
+
         data = json.loads(data.decode("UTF-8"))
         current_scenario = get_scenario(data, method.routing_key)
 
-        logging.info(f"Observer received: {data} from {method.routing_key}")
+        log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Observer received: {data} from {method.routing_key}\n")
 
         if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
             if has_adapted or has_adapted_uncertainty:
-                logging.info("Adaptation worked successfully.")
+                log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adaptation worked successfully.\n")
                 has_adapted = False
                 has_adapted_uncertainty = False
                 scenarios_sequence = []
-            logging.info("System is under a normal scenario.")
+            log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - System is under a normal scenario.\n")
         else:
             scenarios_sequence.append(current_scenario)
-
+            adaptation = self.analyse_adaptation_scenario(scenarios_sequence, self.scenarios["adaptation"])
             if adaptation != "wait" and adaptation != False:
                 if adaptation != "uncertainty":
-                    logging.info(f"Scenario {adaptation} detected.")
+                    log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Scenario {adaptation} detected.\n")
                     adaptation_scenario = adaptation
                     response = requests.get(
                         f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=adaptation"
                     )
                     has_adapted = True
                     if response.status_code == 200:
-                        logging.info(f"Adapted for {adaptation_scenario}")
+                        log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapted for {adaptation_scenario}\n")
                     else:
-                        logging.info(f"Uncertainty detected for {adaptation_scenario}")
+                        log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Uncertainty detected for {adaptation_scenario}\n")
                         response = requests.get(
                             f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
                         )
                         has_adapted_uncertainty = True
                         scenarios_sequence = []
                         if response.status_code == 200:
-                            logging.info(
-                                f"Adapted uncertainty for {adaptation_scenario}"
+                            log_file.write(
+                                f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapted uncertainty for {adaptation_scenario}\n"
                             )
 
                 else:
-                    logging.info(f"Uncertainty detected for {adaptation_scenario}")
+                    log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Uncertainty detected for {adaptation_scenario}\n")
                     response = requests.get(
                         f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
                     )
                     has_adapted_uncertainty = True
                     if response.status_code == 200:
-                        logging.info(f"Adapted uncertainty for {adaptation_scenario}")
+                        log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapted uncertainty for {adaptation_scenario}\n")
                     scenarios_sequence = []
         
+        log_file.close()
         ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)
         for key, value in scenarios.items():

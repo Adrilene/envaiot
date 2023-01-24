@@ -1,13 +1,12 @@
 import os
-
+from datetime import datetime
 from multiprocessing.dummy import Pool
+from time import sleep
 
 import requests
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
-from project import app, logging
-from time import sleep
-
+from project import app
 
 from .validator_adapter import validate_adapter
 from .validator_simulator import validate_simulator
@@ -25,10 +24,7 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
-    try:
-        open("logs.txt", "x")
-    except:
-        pass
+    log_file = open(os.getenv("LOGS_PATH"), "a")
 
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
@@ -41,26 +37,28 @@ def configure_simulator():
         f"{os.getenv('SIMULATOR_HOST')}/configure", json=configuration
     )
     if result.status_code == 200:
-        logging.info(f"Simulator configurated with:")
-        logging.info(f"{configuration}")
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Simulator configurated with:\n"
+        )
+        log_file.write(f"{configuration}\n")
         return jsonify("Simulator set!")
+
+    log_file.close()
     return result
 
 
 @app.route("/configure_adapter", methods=["POST"])
 def configure_adapter():
-    try:
-        open("logs.txt", "x")
-    except:
-        pass
-
+    log_file = open(os.getenv("LOGS_PATH"), "a")
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     errors = validate_adapter(configuration)
     if errors:
         return jsonify(errors), 400
 
-    print("Modelling is correct. Starting to configure adapter...")
+    log_file.write(
+        f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Modelling is correct. Starting to configure adapter...\n"
+    )
 
     result = {}
     observer_configuration = {
@@ -81,26 +79,29 @@ def configure_adapter():
     )
 
     if result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
-        logging.info(f"Adapter configurated with:")
-        logging.info(f"Observer: {observer_configuration}")
-        logging.info(f"Effector {effector_configuration}")
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapter configurated with:\n"
+        )
+        log_file.write(f"Observer: {observer_configuration}\n")
+        log_file.write(f"Effector {effector_configuration}\n")
         return jsonify("Adapter set!")
 
     response = {}
     for key, value in result.items():
         response[key] = value.json()
+
+    log_file.close()
     return jsonify(response), 400
 
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
-    try:
-        open("logs.txt", "x")
-    except:
-        pass
+    log_file = open(os.getenv("LOGS_PATH"), "a")
 
     configuration = dict(request.json)
-    print(f"Starting {configuration['project']}...")
+    log_file.write(
+        f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Starting {configuration['project']}...\n"
+    )
     pool = Pool(1)
 
     future_response = []
@@ -141,15 +142,19 @@ def configure_all():
         and result["Effector"].status_code == 200
     ):
 
-        logging.info(f"Starting project {configuration['project']}")
-        logging.info(f"Simulator: {simulator_configuration}")
-        logging.info(f"Obsever: {observer_configuration}")
-        logging.info(f"Effector: {effector_configuration}")
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Components configured\n"
+        )
+        log_file.write(f"Simulator: {simulator_configuration}\n")
+        log_file.write(f"Obsever: {observer_configuration}\n")
+        log_file.write(f"Effector: {effector_configuration}\n")
         return jsonify("All things set!")
 
     response = {}
     for key, value in result.items():
         response[key] = value.json()
+
+    log_file.close()
     return jsonify(response), 400
 
 
@@ -161,7 +166,7 @@ def validate_scenario():
             f"{os.getenv('SIMULATOR_HOST')}/{scenario['from']}/send_message",
             json=scenario["message"],
         )
-        
+
         sleep(2)
 
     return send_file(os.getenv("LOGS_PATH"), as_attachment=True)

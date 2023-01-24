@@ -1,6 +1,7 @@
 import os
+from datetime import datetime
+
 import requests
-from project import logging
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,16 +9,22 @@ load_dotenv()
 
 class PlanExecuteService:
     def plan(self, actions):
+        log_file = open(os.getenv("LOGS_PATH"), "a")
+
         for action in actions:
             device, action_type, body = action.split(":")
             response = requests.get(f"{os.getenv('SIMULATOR_HOST')}/{device}/status")
             if response.json()["status"] != "inactive":
                 action_result = self.execute(device, action_type, body)
-                logging.info(
-                    f"Action performed on {device} and the result is {action_result}"
+                log_file.write(
+                    f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Action performed on {device} and the result is {action_result}\n"
                 )
                 return device, response.json()["status"]
-        logging.info(f"No device available to execute the actions specified")
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - No device available to execute the actions specified\n"
+        )
+
+        log_file.close()
         return device, "fail"
 
     def execute(self, device, action_type, body):

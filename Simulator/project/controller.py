@@ -1,14 +1,15 @@
-from project import logging
+import os
+from datetime import datetime
 
-from project import app
+from dotenv import load_dotenv
 from flask import jsonify, request
+from project import app
+
 from .devices import Device
 from .list_operations import get_current_device
 from .string_operations import get_exchange_name
 
-devices = []
-
-
+load_dotenv()
 @app.route("/configure", methods=["POST"])
 def configure():
     global devices
@@ -18,12 +19,7 @@ def configure():
         status = resources[device]["status"] + ["active", "inactive"]
         senders = resources[device]["senders"]
         devices.append(
-            Device(
-                device,
-                status,
-                senders,
-                get_exchange_name(request.json["project"])
-            )
+            Device(device, status, senders, get_exchange_name(request.json["project"]))
         )
 
     for device in devices:
@@ -63,21 +59,28 @@ def status(device_name):
 def send_message(device_name):
     global devices
 
+    log_file = open(os.getenv("LOGS_PATH"), "a")
+
     current_device = get_current_device(device_name, devices)
     if "to" in dict(request.json).keys():
         recipient_device = get_current_device(dict(request.json)["to"], devices)
         if not recipient_device:
-            return jsonify({"Error": f"Device Not Found {device_name}"}),400
+            return jsonify({"Error": f"Device Not Found {device_name}"}), 400
 
     if not current_device:
-        return jsonify({"Error": f"Device Not Found {device_name}"}),400
+        return jsonify({"Error": f"Device Not Found {device_name}"}), 400
 
     message = {"type": dict(request.json)["type"], "body": dict(request.json)["body"]}
     if not "to" in dict(request.json).keys():
-        logging.info(f"{device_name} published {message}")
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {device_name} published {message}\n"
+        )
     else:
-        logging.info(f"{device_name} sent {message} to {request.json['to']}")
-        
+        log_file.write(
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {device_name} sent {message} to {request.json['to']}\n"
+        )
+
+    log_file.close()
     return jsonify(
         current_device.publisher.publish(
             message,
