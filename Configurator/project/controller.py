@@ -169,4 +169,4 @@ def validate_scenario():
 
         sleep(2)
 
-    return send_file(os.getenv("LOGS_PATH"), as_attachment=True)
+    return send_file(f'../{os.getenv("LOGS_PATH")}', as_attachment=True)
