@@ -18,6 +18,17 @@ devices = []
 load_dotenv()
 
 
+@app.route("/test-log", methods=["GET"])
+def test_log():
+    try:
+        open("logs.txt", "x")
+    except:
+        pass
+
+    logging.info(f"TEST WITH SUCCESS!")
+    return jsonify({"msg": "TEST WITH SUCCESS!"})
+
+
 @app.route("/index", methods=["GET"])
 def index():
     return jsonify({"msg": "ok"})
@@ -164,4 +175,4 @@ def validate_scenario():
         
         sleep(2)
 
-    return send_file(os.getenv("LOGS_PATH"), as_attachment=True)
+    return send_file(f'../{os.getenv("LOGS_PATH")}', as_attachment=True)

@@ -4,24 +4,65 @@ services:
         build: ./Configurator
         ports:
             - "5000:5000"
+        environment:
+            - CONFIGURATOR_HOST=http://configurator:5000
+            - SIMULATOR_HOST=http://simulator:5001
+            - OBSERVER_HOST=http://observer:5002
+            - EFFECTOR_HOST=http://effector:5003
+            - RABBITMQ_HOST=rabbitmq3
+            - LOGS_PATH=../Logs/logs.txt
+        volumes:
+            - ./Logs/:/Logs
+
     simulator:
         build: ./Simulator
         ports:
             - "5001:5001"
+        environment:
+            - CONFIGURATOR_HOST=http://configurator:5000
+            - SIMULATOR_HOST=http://simulator:5001
+            - OBSERVER_HOST=http://observer:5002
+            - EFFECTOR_HOST=http://effector:5003
+            - RABBITMQ_HOST=rabbitmq3
+            - LOGS_PATH=../Logs/logs.txt
+        volumes:
+            - ./Logs/:/Logs
+        depends_on:
+            - rabbitmq3
+
     observer:
         build: ./Observer
         ports:
             - "5002:5002"
+        environment:
+            - CONFIGURATOR_HOST=http://configurator:5000
+            - SIMULATOR_HOST=http://simulator:5001
+            - OBSERVER_HOST=http://observer:5002
+            - EFFECTOR_HOST=http://effector:5003
+            - RABBITMQ_HOST=rabbitmq3
+            - LOGS_PATH=../Logs/logs.txt
+        volumes:
+            - ./Logs/:/Logs
+
     effector:
         build: ./Effector
         ports:
             - "5003:5003"
-    rabbitmq3:
-        container_name: "rabbitmq3"
-        image: rabbitmq:3.8-management-alpine
         environment:
-            - RABBITMQ_DEFAULT_USER=admin
-            - RABBITMQ_DEFAULT_PASS=admin
+            - CONFIGURATOR_HOST=http://configurator:5000
+            - SIMULATOR_HOST=http://simulator:5001
+            - OBSERVER_HOST=http://observer:5002
+            - EFFECTOR_HOST=http://effector:5003
+            - RABBITMQ_HOST=rabbitmq3
+            - LOGS_PATH=../Logs/logs.txt
+        volumes:
+            - ./Logs/:/Logs
+
+    rabbitmq3:
+        image: rabbitmq:3.6-management-alpine
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
         ports:
             # AMQP protocol port
             - '5672:5672'

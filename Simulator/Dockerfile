@@ -7,6 +7,6 @@ RUN pip install -r requirements.txt
 
 COPY . /Simulator
 
-EXPOSE 5000
+EXPOSE 5001
 ENTRYPOINT ["python3"]
 CMD ["docker-run.py"]

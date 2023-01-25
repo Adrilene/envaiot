@@ -5,7 +5,6 @@ WORKDIR /Configurator
 COPY ./requirements.txt /Configurator
 RUN pip install -r requirements.txt
 
-
 COPY . /Configurator
 
 EXPOSE 5000
