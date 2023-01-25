@@ -1,0 +1,70 @@
+{
+	"project": "Smart Home Project",
+	"resources": {
+		"Manager": {
+			"status": [],
+			"senders": [
+				"Sensor",
+				"AirConditioner"
+			]
+		},
+		"Sensor": {
+			"status": [],
+			"senders": []
+		},
+		"AirConditioner": {
+			"status": [
+				"off",
+				"on"
+			],
+			"senders": []
+		}
+	},
+	"communication": {
+		"user": "guest",
+		"host": "localhost:15672",
+		"password": "guest"
+	},
+	"scenarios": {
+		"normal": {
+			"sender": "Sensor",
+			"type": "status",
+			"body": false
+		},
+		"adaptation": {
+			"ACOn": [
+				{
+					"sender": "Sensor",
+					"type": "status",
+					"body": {
+						"presence": true
+					}
+				},
+				{
+					"sender": "AirConditioner",
+					"type": "status",
+					"body": {
+						"temperature": 20
+					}
+				}
+			],
+			"ACOff": [
+				{
+					"sender": "Sensor",
+					"type": "status",
+					"body": {
+						"presence": true
+					}
+				},
+				{
+					"sender": "AirConditioner",
+					"type": "status",
+					"body": {
+						"temperature": 30
+					}
+				}
+			]
+		}
+	},
+	"strategies": "IF ACOn THEN ON AirConditioner STATUS on OTHERWISE ON Manager MESSAGE 'Could not turn on the air conditioner' IF ACOff THEN ON AirConditioner STATUS off OTHERWISE ON Manager MESSAGE 'Could not turn off the air conditioner'"
+}

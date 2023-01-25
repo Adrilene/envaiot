@@ -6,10 +6,15 @@ from threading import Thread
 from dotenv import load_dotenv
 
 from .communication_service import CommunicationService
-from .string_operations import (get_publishing_routing_key, get_queue_name,
-                                get_subscribing_routing_key)
+from .string_operations import (
+    get_publishing_routing_key,
+    get_queue_name,
+    get_subscribing_routing_key,
+)
 
 load_dotenv()
+
+
 class DeviceSubscriber(CommunicationService, Thread):
     def __init__(self, exchange, device_name, senders):
         CommunicationService.__init__(self, exchange)
@@ -47,7 +52,7 @@ class DeviceSubscriber(CommunicationService, Thread):
         body = json.loads(body)
 
         log_file.write(
-            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {self.device_name} received {body} from {method.routing_key}"
+            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {self.device_name} received {body} from {method.routing_key}\n"
         )
 
         log_file.close()

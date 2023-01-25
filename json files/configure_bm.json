@@ -46,7 +46,7 @@
 		"adaptation": {
 			"TVBlocked": [
 				{
-					"sender": "Smartphone",
+					"receiver": "SmartTV",
 					"type": "notification"
 				},
 				{

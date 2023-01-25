@@ -14,6 +14,10 @@ class PlanExecuteService:
         for action in actions:
             device, action_type, body = action.split(":")
             response = requests.get(f"{os.getenv('SIMULATOR_HOST')}/{device}/status")
+            log_file.write(
+                f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {device} status is {response.json()['status']}\n"
+            )
+            
             if response.json()["status"] != "inactive":
                 action_result = self.execute(device, action_type, body)
                 log_file.write(

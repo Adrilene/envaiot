@@ -1,0 +1,20 @@
+[
+	{
+		"from": "Sensor",
+		"message": {
+			"type": "status",
+			"body": {
+				"presence": true
+			}
+		}
+	},
+	{
+		"from": "AirConditioner",
+		"message": {
+			"type": "status",
+			"body": {
+				"temperature": 20
+			}
+		}
+	}
+]

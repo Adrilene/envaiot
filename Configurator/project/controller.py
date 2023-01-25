@@ -82,8 +82,8 @@ def configure_adapter():
         log_file.write(
             f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapter configurated with:\n"
         )
-        log_file.write(f"Observer: {observer_configuration}\n")
-        log_file.write(f"Effector {effector_configuration}\n")
+        log_file.write(f"\tObserver: {observer_configuration}\n")
+        log_file.write(f"\tEffector {effector_configuration}\n")
         return jsonify("Adapter set!")
 
     response = {}
@@ -145,9 +145,9 @@ def configure_all():
         log_file.write(
             f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Components configured\n"
         )
-        log_file.write(f"Simulator: {simulator_configuration}\n")
-        log_file.write(f"Obsever: {observer_configuration}\n")
-        log_file.write(f"Effector: {effector_configuration}\n")
+        log_file.write(f"\tSimulator: {simulator_configuration}\n")
+        log_file.write(f"\tObsever: {observer_configuration}\n")
+        log_file.write(f"\tEffector: {effector_configuration}\n")
         return jsonify("All things set!")
 
     response = {}

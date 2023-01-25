@@ -27,7 +27,7 @@ def read_actions(actions):
                 index = i
             continue
 
-        if actions[index] == "OTHERWISE":
+        if actions[index] == "OTHERWISE" or actions[index] == "IF":
             break
     
     return actions_list, index+1
@@ -64,6 +64,6 @@ def strategies_to_dict(strategies):
     return strategies_dict
 
 # actions_dict = strategies_to_dict(
-#     "IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON Assistant MESSAGE 'The baby needs attention' ON SmartLamp STATUS blink"
+#     "IF ACOn THEN ON AirConditioner STATUS on OTHERWISE ON Manager MESSAGE 'Could not turn on the air conditioner' IF ACOff THEN ON AirConditioner STATUS off OTHERWISE ON Manager MESSAGE 'Could not turn off the air conditioner'"
 # )
 # print(actions_dict)

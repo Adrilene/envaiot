@@ -1,10 +1,14 @@
 class MonitorAnalyseService:
     def analyse_normal_scenario(self, current_scenario, normal_scenario):
         for scenario in normal_scenario:
-            if (
-                current_scenario["type"] == scenario["type"]
-                and current_scenario["topic"] == scenario["topic"]
-            ):
+            equal_number = 0
+            normal_keys = scenario.keys()
+            for key in normal_keys:
+                if key not in current_scenario.keys():
+                    return False
+                if current_scenario[key] == scenario[key]:
+                    equal_number += 1
+            if equal_number == len(normal_keys):
                 return True
         return False
 
