@@ -1,0 +1,11 @@
+[
+	{
+		"from": "AlcoholSensor",
+		"message": {
+			"type": "status",
+			"body": {
+				"AlcoholLevel": "high"
+			}
+		}
+	}
+]

@@ -1,0 +1,86 @@
+{
+	"project": "Driver Safety Project",
+	"resources": {
+		"AlcoholSensor": {
+			"status": [
+				"normal",
+				"high"
+			],
+			"senders": []
+		},
+		"SpeedSensor": {
+			"status": [],
+			"senders": [
+				"normal",
+				"high"
+			]
+		},
+		"Brake": {
+			"status": [],
+			"senders": [
+				"manual",
+				"assistance"
+			]
+		},
+		"Steering": {
+			"status": [
+				"manual",
+				"assistance"
+			],
+			"senders": []
+		},
+		"Manager": {
+			"status": [],
+			"senders": [
+				"AlcoholSensor",
+				"SpeedSensor",
+				"Brake",
+				"Steering"
+			]
+		}
+	},
+	"communication": {
+		"user": "guest",
+		"host": "localhost:15672",
+		"password": "guest"
+	},
+	"scenarios": {
+		"normal": [
+			{
+				"sender": "AlcoholSensor",
+				"type": "status",
+				"body": {
+					"AlcoholLevel": "normal"
+				}
+			},
+			{
+				"sender": "SpeedSensor",
+				"type": "status",
+				"body": {
+					"Speed": "normal"
+				}
+			}
+		],
+		"adaptation": {
+			"HighAlcohol": [
+				{
+					"sender": "AlcoholSensor",
+					"type": "status",
+					"body": {
+						"AlcoholLevel": "high"
+					}
+				}
+			],
+			"HighSpeed": [
+				{
+					"sender": "SpeedSensor",
+					"type": "status",
+					"body": {
+						"Speed": "high"
+					}
+				}
+			]
+		}
+	},
+	"strategies": "IF HighAlcohol THEN ON Steering STATUS assistance OTHERWISE ON Manager MESSAGE 'Send message to emergency contact' IF HighSpeed THEN ON Brake STATUS assistance OTHERWISE ON Manager MESSAGE 'Send message to emergency contact'"
+}
