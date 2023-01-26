@@ -12,7 +12,7 @@ class CommunicationService:
             self.delete_exchange(exchange)
         except:
             pass
-        
+
         self.declare_exchange(exchange)
 
     def declare_exchange(self, exchange):

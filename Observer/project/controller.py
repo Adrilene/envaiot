@@ -1,6 +1,7 @@
-from .observer import Observer
 from flask import jsonify, request
 from project import app
+
+from .observer import Observer
 
 observer = None
 
@@ -12,7 +13,7 @@ def configure():
     observer = Observer(
         request.json["communication"],
         request.json["scenarios"],
-        request.json["project"]
+        request.json["project"],
     )
     observer.start()
 

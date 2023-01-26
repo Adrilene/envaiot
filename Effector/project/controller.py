@@ -6,6 +6,7 @@ from flask import jsonify, request
 from project import app
 
 from .effector import Effector
+from .utils import write_log
 
 effector = None
 device, curent_status = None, None
@@ -28,17 +29,15 @@ def configure():
 def adapt():
     global effector, device, current_status
 
-    log_file = open(os.getenv("LOGS_PATH"), "a")
     scenario = request.args.get("scenario")
     adapt_type = request.args.get("adapt_type")
 
-    log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapting {adapt_type} for {scenario}\n")
+    write_log(f"Adapting {adapt_type} for {scenario}.")
 
     device, current_status = effector.adapt(scenario, adapt_type)
     if current_status == "fail":
         return jsonify("Effector Failed"), 500
 
-    log_file.close()
     return jsonify("Effector Successful"), 200
 
 
@@ -46,9 +45,7 @@ def adapt():
 def return_to_previous_state():
     global effector, device, current_status
 
-    log_file = open(os.getenv("LOGS_PATH"), "a")
-
-    log_file.write(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Returning {device} to {current_status}...\n")
+    write_log(f"Returning {device} to {current_status}...\n")
     response = effector.execute(device, current_status)
 
     if response == "success":

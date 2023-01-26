@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from multiprocessing.dummy import Pool
 from time import sleep
 
@@ -8,6 +7,7 @@ from dotenv import load_dotenv
 from flask import jsonify, request, send_file
 from project import app
 
+from .utils import write_log
 from .validator_adapter import validate_adapter
 from .validator_simulator import validate_simulator
 
@@ -24,7 +24,6 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
-    log_file = open(os.getenv("LOGS_PATH"), "a")
 
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
@@ -37,28 +36,22 @@ def configure_simulator():
         f"{os.getenv('SIMULATOR_HOST')}/configure", json=configuration
     )
     if result.status_code == 200:
-        log_file.write(
-            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Simulator configurated with:\n"
-        )
-        log_file.write(f"{configuration}\n")
+        write_log(f"Simulator configurated with:")
+        write_log(f"{configuration}\n")
         return jsonify("Simulator set!")
 
-    log_file.close()
     return result
 
 
 @app.route("/configure_adapter", methods=["POST"])
 def configure_adapter():
-    log_file = open(os.getenv("LOGS_PATH"), "a")
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     errors = validate_adapter(configuration)
     if errors:
         return jsonify(errors), 400
 
-    log_file.write(
-        f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Modelling is correct. Starting to configure adapter...\n"
-    )
+    write_log(f"Modelling is correct. Starting to configure adapter...")
 
     result = {}
     observer_configuration = {
@@ -79,29 +72,23 @@ def configure_adapter():
     )
 
     if result["Observer"].status_code == 200 and result["Effector"].status_code == 200:
-        log_file.write(
-            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Adapter configurated with:\n"
-        )
-        log_file.write(f"\tObserver: {observer_configuration}\n")
-        log_file.write(f"\tEffector {effector_configuration}\n")
+        write_log(f"Adapter configurated with:")
+        write_log(f"Observer: {observer_configuration}")
+        write_log(f"Effector {effector_configuration}")
         return jsonify("Adapter set!")
 
     response = {}
     for key, value in result.items():
         response[key] = value.json()
 
-    log_file.close()
     return jsonify(response), 400
 
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
-    log_file = open(os.getenv("LOGS_PATH"), "a")
 
     configuration = dict(request.json)
-    log_file.write(
-        f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Starting {configuration['project']}...\n"
-    )
+    write_log(f"Starting {configuration['project']}...")
     pool = Pool(1)
 
     future_response = []
@@ -142,19 +129,16 @@ def configure_all():
         and result["Effector"].status_code == 200
     ):
 
-        log_file.write(
-            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Components configured\n"
-        )
-        log_file.write(f"\tSimulator: {simulator_configuration}\n")
-        log_file.write(f"\tObsever: {observer_configuration}\n")
-        log_file.write(f"\tEffector: {effector_configuration}\n")
+        write_log(f"Components configured:")
+        write_log(f"Simulator: {simulator_configuration}")
+        write_log(f"Obsever: {observer_configuration}")
+        write_log(f"Effector: {effector_configuration}")
         return jsonify("All things set!")
 
     response = {}
     for key, value in result.items():
         response[key] = value.json()
 
-    log_file.close()
     return jsonify(response), 400
 
 

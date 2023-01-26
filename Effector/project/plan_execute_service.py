@@ -3,32 +3,26 @@ from datetime import datetime
 
 import requests
 from dotenv import load_dotenv
+from .utils import write_log
 
 load_dotenv()
 
 
 class PlanExecuteService:
     def plan(self, actions):
-        log_file = open(os.getenv("LOGS_PATH"), "a")
-
         for action in actions:
             device, action_type, body = action.split(":")
             response = requests.get(f"{os.getenv('SIMULATOR_HOST')}/{device}/status")
-            log_file.write(
-                f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - {device} status is {response.json()['status']}\n"
-            )
-            
+            write_log(f"{device} status is {response.json()['status']}.")
+
             if response.json()["status"] != "inactive":
                 action_result = self.execute(device, action_type, body)
-                log_file.write(
-                    f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - Action performed on {device} and the result is {action_result}\n"
+                write_log(
+                    f"Action performed on {device} and the result is {action_result}."
                 )
                 return device, response.json()["status"]
-        log_file.write(
-            f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} - No device available to execute the actions specified\n"
-        )
+        write_log(f"No device available to execute the actions specified.")
 
-        log_file.close()
         return device, "fail"
 
     def execute(self, device, action_type, body):

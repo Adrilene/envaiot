@@ -1,5 +1,7 @@
 class MonitorAnalyseService:
     def analyse_normal_scenario(self, current_scenario, normal_scenario):
+        print(f"RECEIVED {current_scenario}")
+        print(f"REFERENCE {normal_scenario}")
         for scenario in normal_scenario:
             equal_number = 0
             normal_keys = scenario.keys()
@@ -25,7 +27,8 @@ class MonitorAnalyseService:
         return False
 
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
-
+        print(f"RECEIVED {current_scenario}")
+        print(f"REFERENCE {adaptation_scenario}")
         for scenario in adaptation_scenario:
             if len(current_scenario) < len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
@@ -49,15 +52,12 @@ class MonitorAnalyseService:
 
 
 # adaptation = {
-#     "TVBlocked": [
-#         {"type": "notification", "topic": "stv_msg"},
-#         {"type": "status", "body": {"block": True}, "topic": "stv_info"},
-#     ]
+#     'HighAlcohol': [{'type': 'status', 'body': {'AlcoholLevel': 'high'}, 'topic': 'as_info'}],
+#     'HighSpeed': [{'type': 'status', 'body': {'Speed': 'high'}, 'topic': 'ss_info'}]
 # }
 # sequence = [
-#     {"type": "notification", "body": "The baby needs attention", "topic": "stv_msg"},
-#     {"type": "status", "body": {"block": True}, "topic": "stv_info"}
+#     {'type': 'status', 'body': {'AlcoholLevel': 'high'}, 'topic': 'as_info'}
 # ]
 # normal = [{"type": "status", "topic": "bm_msg"}]
 
-# print(MonitorAnalyseService().analyse_adaptation_scenario(sequence, adaptation))
+# print(MonitorAnalyseService().analyse_normal_scenario(sequence[0], normal))
