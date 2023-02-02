@@ -1,0 +1,8 @@
+List all devices previous modelling 
+---
+tags:
+  - List Devices
+
+responses:
+  200:
+    description: Returns a simple OK message

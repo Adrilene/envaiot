@@ -1,0 +1,204 @@
+Configure all features of all entities involved in the simulation
+---
+tags:
+  - Configure All Entities
+
+definitions:
+  project:
+    type: string
+    description: The project name
+
+  resources:
+    type: object
+    properties:
+      Device:
+        type: object
+        properties:
+          status:
+            type: array
+            items:
+              type: string
+          senders:
+            type: array
+            items:
+              type: string
+      
+
+  communication:
+    type: object
+    properties:
+      host:
+        type: string
+        description: hostname to conenction
+      user:
+        type: string
+        description: username to connection
+      password:
+        type: string
+        description: password to connection
+
+
+  scenarios:
+    type: object
+    properties:
+      normal:
+        type: object
+        properties:
+          sender:
+            type: string
+            description: Sender of message
+          "type":
+            type: string
+            description: Status of message
+      adaptation:
+        type: object
+        properties:
+          TVBlocked:
+            type: array
+            items:
+              type: object
+
+
+  strategies:
+    type: string
+    description: strategie to adaptation
+
+parameters:
+  - in: body
+    name: complete modeling
+    required: true
+    description: This body has complete modelling (project, resources, communication, scenarios, strategies)
+    schema:
+      id: configure_all
+      properties:
+
+        project:
+          type: string
+          description: The project name
+          example: Baby Monitor Project
+
+
+        resources:
+          type: object
+          properties:
+            SmartTV:
+              type: object
+              properties:
+                status:
+                  type: array
+                  items:
+                    type: string
+                  example: ["available", "blocked"]
+                senders:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+            
+            BabyMonitor:
+              type: object
+              properties:
+                status:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+                senders:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+
+            Smartphone:
+              type: object
+              properties:
+                status:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+                senders:
+                  type: array
+                  items:
+                    type: string
+                  example: ["BabyMonitor","SmartTV"]
+
+            SmartLamp:
+              type: object
+              properties:
+                status:
+                  type: array
+                  items:
+                    type: string
+                  example: ["on", "off"]
+                senders:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+
+            Assistant:
+              type: object
+              properties:
+                status:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+                senders:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+
+        communication:
+          type: object
+          properties:
+            host:
+              type: string
+              description: hostname to conenction
+              example: rabbitmq3:15672
+            user:
+              type: string
+              description: username to connection
+              example: guest
+            password:
+              type: string
+              description: password to connection
+              example: guest
+
+
+        scenarios:
+          type: object
+          properties:
+            normal:
+              type: object
+              properties:
+                sender:
+                  type: string
+                  description: Sender of message
+                  example: BabyMonitor
+                "type":
+                  type: string
+                  description: Status of message
+                  example: status
+            adaptation:
+              type: object
+              properties:
+                TVBlocked:
+                  type: array
+                  items:
+                    type: object
+                  example: [{"sender": "Smartphone", "type": "notification"}, {"sender": "SmartTV","type": "status","body": {"block": true}}]
+
+  
+        strategies:
+          type: string
+          description: strategie to adaptation
+          example: IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON SmartLamp STATUS blink ON Assistant STATUS play
+
+        
+
+responses:
+  200:
+    description: Returns a simple OK message

@@ -1,0 +1,8 @@
+Returns devices to their previous status
+---
+tags:
+  - Return Device to Previous Status
+
+responses:
+  200:
+    description: Returns a simple OK message

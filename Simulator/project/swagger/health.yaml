@@ -1,0 +1,8 @@
+Analyze the health of the API, checking if it is working
+---
+tags:
+  - Simulator Health
+
+responses:
+  200:
+    description: Returns a simple OK message

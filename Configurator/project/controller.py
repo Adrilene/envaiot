@@ -5,6 +5,7 @@ from time import sleep
 import requests
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
+from flasgger import swag_from
 from project import app
 
 from .utils import write_log
@@ -17,12 +18,14 @@ devices = []
 load_dotenv()
 
 
-@app.route("/index", methods=["GET"])
-def index():
+@app.route("/health", methods=["GET"])
+@swag_from('swagger/health.yaml')
+def health():
     return jsonify({"msg": "ok"})
 
 
 @app.route("/configure_simulator", methods=["POST"])
+@swag_from('swagger/configure_simulator.yaml')
 def configure_simulator():
 
     configuration = dict(request.json)
@@ -44,6 +47,7 @@ def configure_simulator():
 
 
 @app.route("/configure_adapter", methods=["POST"])
+@swag_from('swagger/configure_adapter.yaml')
 def configure_adapter():
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
@@ -85,6 +89,7 @@ def configure_adapter():
 
 
 @app.route("/configure_all", methods=["POST"])
+@swag_from('swagger/configure_all.yaml')
 def configure_all():
 
     configuration = dict(request.json)
@@ -143,6 +148,7 @@ def configure_all():
 
 
 @app.route("/validate_scenario", methods=["POST"])
+@swag_from('swagger/validate_scenario.yaml')
 def validate_scenario():
     scenarios = list(request.json)
     for scenario in scenarios:

@@ -1,0 +1,70 @@
+Configures all features for adaptation
+---
+tags:
+  - Configure Adapter
+
+parameters:
+  - in: body
+    name: adapter modelling
+    required: true
+    description: This body has modelling to adapter (project, communication, scenarios, strategies)
+    schema:
+      id: configure_adapter
+      properties:
+
+
+        project:
+          type: string
+          description: The project name
+          example: Baby Monitor Project
+
+
+        communication:
+          type: object
+          properties:
+            host:
+              type: string
+              description: hostname to conenction
+              example: rabbitmq3:15672
+            user:
+              type: string
+              description: username to connection
+              example: guest
+            password:
+              type: string
+              description: password to connection
+              example: guest
+
+
+        scenarios:
+          type: object
+          properties:
+            normal:
+              type: object
+              properties:
+                sender:
+                  type: string
+                  description: Sender of message
+                  example: BabyMonitor
+                "type":
+                  type: string
+                  description: Status of message
+                  example: status
+            adaptation:
+              type: object
+              properties:
+                TVBlocked:
+                  type: array
+                  items:
+                    type: object
+                  example: [{"sender": "Smartphone", "type": "notification"}, {"sender": "SmartTV","type": "status","body": {"block": true}}]
+
+  
+        strategies:
+          type: string
+          description: strategie to adaptation
+          example: IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON SmartLamp STATUS blink ON Assistant STATUS play
+
+responses:
+  200:
+    description: Returns a simple OK message

@@ -1,0 +1,27 @@
+Configure all features of effector
+---
+tags:
+  - Configure Effector
+
+definitions:
+  strategies:
+    type: string
+    description: strategie to adaptation
+
+parameters:
+  - in: body
+    name: complete modeling
+    required: true
+    description: This body has modelling to apply adaptation (strategies)
+    schema:
+      id: configure_effector
+      properties:
+        strategies:
+          type: string
+          description: strategie to adaptation
+          example: IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON SmartLamp STATUS blink ON Assistant STATUS play
+
+      
+responses:
+  200:
+    description: Returns a simple OK message

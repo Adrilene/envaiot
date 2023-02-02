@@ -1,0 +1,37 @@
+Evaluate the functioning of your assembled scenario
+---
+tags:
+  - Scenario Validation
+
+parameters:
+  - in: body
+    name: validation modelling
+    required: true
+    description: This body has modelling to validate scenarios
+    schema:
+      id: validation
+      properties:
+
+        resources:
+          type: array
+          items:
+            type: object
+            propeties:
+              from:
+                type: string
+              message:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  body:
+                    type: string
+                  to:
+                    type: string
+
+          example: [{"from":"Smartphone","message":{"type":"notification","body":"The baby needs attention","to":"SmartTV"}},{"from":"SmartTV","message":{"type":"status","body":{"block":true}}},{"from":"SmartTV","message":{"type":"status","body":"Stop it"}},{"from":"BabyMonitor","message":{"type":"status","body":"The baby is fine!"}}]
+         
+
+responses:
+  200:
+    description: Returns a simple OK message

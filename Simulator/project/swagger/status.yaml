@@ -1,0 +1,24 @@
+Send status to device previous modelling
+---
+tags:
+  - Send Status to Device
+
+parameters:
+  - in: path
+    name: device name
+    type: string
+    required: true
+    description: The name of the device that was previously modeled
+  - in: body
+    name: device status
+    required: true
+    schema:
+      id: status
+      properties:
+        new_status:
+          type: string
+      example: {"new_status": "inactive"}
+
+responses:
+  200:
+    description: Returns a simple OK message

@@ -1,0 +1,8 @@
+Adapt the device to work around a problem
+---
+tags:
+  - Adapts the Device
+
+responses:
+  200:
+    description: Returns a simple OK message

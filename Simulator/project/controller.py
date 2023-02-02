@@ -1,11 +1,17 @@
 from flask import jsonify, request
 from project import app
-
+from flasgger import swag_from
 from .devices import Device
 from .string_operations import get_exchange_name
 from .utils import get_current_device, write_log
 
 
+@swag_from('swagger/health.yaml')
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"msg": "ok"})
+
+@swag_from('swagger/configure.yaml')
 @app.route("/configure", methods=["POST"])
 def configure():
     global devices
@@ -23,7 +29,7 @@ def configure():
 
     return jsonify({"Devices instatiated": [device.name for device in devices]})
 
-
+@swag_from('swagger/devices_list.yaml')
 @app.route("/devices_list", methods=["GET"])
 def get_devices_list():
     return jsonify(
@@ -34,7 +40,7 @@ def get_devices_list():
         }
     )
 
-
+@swag_from('swagger/status.yaml')
 @app.route("/<device_name>/status", methods=["GET", "POST"])
 def status(device_name):
     global devices
@@ -50,7 +56,7 @@ def status(device_name):
     new_status = dict(request.json)["new_status"]
     return current_device.set_status(new_status)
 
-
+@swag_from('swagger/send_message.yaml')
 @app.route("/<device_name>/send_message", methods=["POST"])
 def send_message(device_name):
     global devices

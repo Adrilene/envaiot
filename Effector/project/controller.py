@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import jsonify, request
 from project import app
-
+from flasgger import swag_from
 from .effector import Effector
 from .utils import write_log
 
@@ -13,18 +13,19 @@ device, curent_status = None, None
 load_dotenv()
 
 
-@app.route("/index", methods=["GET"])
-def index():
+@swag_from('swagger/health.yaml')
+@app.route("/health", methods=["GET"])
+def health():
     return jsonify({"msg": "ok"})
 
-
+@swag_from('swagger/configure.yaml')
 @app.route("/configure", methods=["POST"])
 def configure():
     global effector
     effector = Effector(request.json["strategies"])
     return jsonify("Effector Configured")
 
-
+@swag_from('swagger/adapt.yaml')
 @app.route("/adapt", methods=["GET"])
 def adapt():
     global effector, device, current_status
@@ -40,7 +41,7 @@ def adapt():
 
     return jsonify("Effector Successful"), 200
 
-
+@swag_from('swagger/return_to_previous.yaml')
 @app.route("/return_to_previous", methods=["GET"])
 def return_to_previous_state():
     global effector, device, current_status

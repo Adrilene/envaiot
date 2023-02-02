@@ -1,0 +1,26 @@
+Send message to device previous modelling
+---
+tags:
+  - Send Message to Device
+
+parameters:
+  - in: path
+    name: device name
+    type: string
+    required: true
+    description: The name of the device that was previously modeled
+  - in: body
+    name: device message
+    required: true
+    schema:
+      id: message
+      properties:
+        type:
+          type: string
+        body:
+          type: object
+      example: {"type":"status","body":{"block":true}}
+
+responses:
+  200:
+    description: Returns a simple OK message
