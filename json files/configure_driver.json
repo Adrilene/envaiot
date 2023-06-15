@@ -9,18 +9,18 @@
 			"senders": []
 		},
 		"SpeedSensor": {
-			"status": [],
-			"senders": [
+			"status": [
 				"normal",
 				"high"
-			]
+			],
+			"senders": []
 		},
 		"Brake": {
-			"status": [],
-			"senders": [
+			"status": [
 				"manual",
 				"assistance"
-			]
+			],
+			"senders": []
 		},
 		"Steering": {
 			"status": [
@@ -33,16 +33,11 @@
 			"status": [],
 			"senders": [
 				"AlcoholSensor",
-				"SpeedSensor",
-				"Brake",
-				"Steering"
+				"SpeedSensor"
 			]
 		}
 	},
-	"communication": {
-		"user": "guest",
-		"host": "localhost:15672",
-		"password": "guest"
+	"communication": {...
 	},
 	"scenarios": {
 		"normal": [

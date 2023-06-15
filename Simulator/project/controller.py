@@ -11,11 +11,12 @@ def configure():
     global devices
     devices = []
     resources = request.json["resources"]
+    exchange_name = get_exchange_name(request.json["project"])
     for device in resources.keys():
         status = resources[device]["status"] + ["active", "inactive"]
         senders = resources[device]["senders"]
         devices.append(
-            Device(device, status, senders, get_exchange_name(request.json["project"]))
+            Device(device, status, senders, exchange_name)
         )
 
     for device in devices:

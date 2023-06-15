@@ -1,12 +1,11 @@
 import pika
 import os
 
+
 class CommunicationService:
     def __init__(self, exchange):
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=os.getenv('RABBITMQ_HOST')),
-        )
-        self.channel = self.connection.channel()
+        connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+        self.channel = connection.channel()
         self.exchange = exchange
         self.declare_exchange(exchange)
 

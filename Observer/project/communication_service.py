@@ -3,11 +3,9 @@ import os
 
 
 class CommunicationService:
-    def __init__(self, exchange):
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=os.getenv('RABBITMQ_HOST')),
-        )
-        self.channel = self.connection.channel()
+    def __init__(self, exchange, host):
+        connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+        self.channel = connection.channel()
         self.exchange = exchange
         try:
             self.delete_exchange(exchange)

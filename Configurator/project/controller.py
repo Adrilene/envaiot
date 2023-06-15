@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 from flask import jsonify, request, send_file
 from project import app
 
-from .utils import write_log
+from .utils import write_log, get_exchange_name
 from .validator_adapter import validate_adapter
 from .validator_simulator import validate_simulator
+from .assert_scenario import assert_scenario
 
 devices = []
 
@@ -133,6 +134,12 @@ def configure_all():
         write_log(f"Simulator: {simulator_configuration}")
         write_log(f"Obsever: {observer_configuration}")
         write_log(f"Effector: {effector_configuration}")
+        
+        assert_scenario(
+            configuration["scenarios"]["adaptation"],
+            get_exchange_name(configuration["project"])
+        )
+
         return jsonify("All things set!")
 
     response = {}

@@ -1,7 +1,5 @@
 class MonitorAnalyseService:
     def analyse_normal_scenario(self, current_scenario, normal_scenario):
-        print(f"RECEIVED {current_scenario}")
-        print(f"REFERENCE {normal_scenario}")
         for scenario in normal_scenario:
             equal_number = 0
             normal_keys = scenario.keys()
@@ -27,8 +25,6 @@ class MonitorAnalyseService:
         return False
 
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
-        print(f"RECEIVED {current_scenario}")
-        print(f"REFERENCE {adaptation_scenario}")
         for scenario in adaptation_scenario:
             if len(current_scenario) < len(adaptation_scenario[scenario]):
                 for i in range(len(current_scenario)):
