@@ -32,28 +32,21 @@ class MonitorAnalyseService:
                         current_scenario[i], adaptation_scenario[scenario][i]
                     ):
                         return "wait"
-                    return False
             if len(current_scenario) >= len(adaptation_scenario[scenario]):
+                count = 0
                 for i in range(len(current_scenario)):
                     if i >= len(adaptation_scenario[scenario]):
                         break
-                    if not self.compare_scenarios(
+                    if self.compare_scenarios(
                         current_scenario[i], adaptation_scenario[scenario][i]
                     ):
-                        return False
+                        count += 1
+                        continue
+                    break
+                if count == len(adaptation_scenario[scenario]):
+                    return scenario
+
                 if len(current_scenario) > len(adaptation_scenario[scenario]):
                     return "uncertainty"
-                return scenario
-            return False
 
-
-# adaptation = {
-#     'HighAlcohol': [{'type': 'status', 'body': {'AlcoholLevel': 'high'}, 'topic': 'as_info'}],
-#     'HighSpeed': [{'type': 'status', 'body': {'Speed': 'high'}, 'topic': 'ss_info'}]
-# }
-# sequence = [
-#     {'type': 'status', 'body': {'AlcoholLevel': 'high'}, 'topic': 'as_info'}
-# ]
-# normal = [{"type": "status", "topic": "bm_msg"}]
-
-# print(MonitorAnalyseService().analyse_normal_scenario(sequence[0], normal))
+        return False
