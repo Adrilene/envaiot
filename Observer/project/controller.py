@@ -18,3 +18,12 @@ def configure():
     observer.start()
 
     return jsonify({"msg": "Observer Start"})
+
+
+@app.route("/get_adaptation_status", methods=["GET"])
+def get_adaptation_status():
+    global observer
+
+    if observer.adaptation_status:
+        return jsonify(observer.adaptation_status), 200
+    return jsonify(observer.adaptation_status), 400

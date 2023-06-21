@@ -10,8 +10,13 @@ from dotenv import load_dotenv
 from .communication_service import CommunicationService
 from .connection import subscribe_in_all_queues
 from .monitor_analyse_service import MonitorAnalyseService
-from .utils import (get_exchange_name, get_receiver_routing_key,
-                              get_scenario, get_sender_routing_key, write_log)
+from .utils import (
+    get_exchange_name,
+    get_receiver_routing_key,
+    get_scenario,
+    get_sender_routing_key,
+    write_log,
+)
 
 scenarios_sequence = []
 adaptation_scenario = ""
@@ -29,8 +34,11 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         adaptation_scenario = ""
         has_adapted = False
         has_adapted_uncertainty = False
+        self.adaptation_status = False
 
-        CommunicationService.__init__(self, get_exchange_name(project_name), communication["host"])
+        CommunicationService.__init__(
+            self, get_exchange_name(project_name), communication["host"]
+        )
         Thread.__init__(self)
         self.scenarios = self.get_scenarios(scenarios)
         self.queue = "observer"
@@ -65,7 +73,8 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
             if has_adapted or has_adapted_uncertainty:
                 msg_log = f"Adaptation worked successfully."
-                print(colored('[SUCCESS]', 'green'), msg_log)
+                self.adaptation_status = True
+                print(colored("[SUCCESS]", "green"), msg_log)
                 write_log(msg_log)
                 self.reset_values()
             write_log(f"System is under a normal scenario.")
@@ -83,23 +92,30 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                     )
                     has_adapted = True
                     if response.status_code == 200:
+                        self.adaptation_status = True
                         write_log(f"Adapted for {adaptation_scenario}.")
                         self.reset_values()
                     else:
                         msg_log = f"Adaptation failed for {adaptation_scenario}. Adapting uncertainty..."
-                        print(colored('[FAILED]', "red"), msg_log)
+                        self.adaptation_status = False
+                        print(colored("[FAILED]", "red"), msg_log)
                         write_log(msg_log)
                         response = requests.get(
                             f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
                         )
                         has_adapted_uncertainty = True
                         if response.status_code == 200:
+                            self.adaptation_status = True
                             write_log(f"Adapted uncertainty for {adaptation_scenario}.")
 
                         else:
-                            msg_log = f"Uncertainty for {adaptation_scenario} failed."f"Uncertainty for {adaptation_scenario} failed."
+                            msg_log = (
+                                f"Uncertainty for {adaptation_scenario} failed."
+                                f"Uncertainty for {adaptation_scenario} failed."
+                            )
                             write_log(msg_log)
-                            print(colored('[FAILED]', 'red'), msg_log)
+                            self.adaptation_status = False
+                            print(colored("[FAILED]", "red"), msg_log)
                         self.reset_values()
                 else:
                     write_log(f"Uncertainty detected for {adaptation_scenario}.")
@@ -109,13 +125,15 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                     has_adapted_uncertainty = True
                     if response.status_code == 200:
                         msg_log = f"Adapted uncertainty for {adaptation_scenario}."
-                        print(colored('[SUCCESS]', 'green'), msg_log)
+                        self.adaptation_status = True
+                        print(colored("[SUCCESS]", "green"), msg_log)
                         write_log(msg_log)
 
                     else:
                         msg_log = f"Uncertainty for {adaptation_scenario} failed."
                         write_log(msg_log)
-                        print(colored('[FAILED]', 'red'), msg_log)
+                        self.adaptation_status = False
+                        print(colored("[FAILED]", "red"), msg_log)
                     self.reset_values()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -159,4 +177,5 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             )
                             new_message.pop("sender")
                         new_scenarios["adaptation"][scenario_name].append(new_message)
+        print(new_scenarios)
         return new_scenarios

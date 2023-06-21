@@ -15,9 +15,7 @@ def configure():
     for device in resources.keys():
         status = resources[device]["status"] + ["active", "inactive"]
         senders = resources[device]["senders"]
-        devices.append(
-            Device(device, status, senders, exchange_name)
-        )
+        devices.append(Device(device, status, senders, exchange_name))
 
     for device in devices:
         device.subscriber.start()
@@ -47,6 +45,9 @@ def status(device_name):
 
     if request.method == "GET":
         return current_device.get_status()
+
+    if dict(request.json)["new_status"] not in current_device.status:
+        return jsonify(f"Status not available for device {current_device}"), 400
 
     new_status = dict(request.json)["new_status"]
     return current_device.set_status(new_status)

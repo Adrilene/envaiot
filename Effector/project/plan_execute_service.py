@@ -10,6 +10,7 @@ load_dotenv()
 
 class PlanExecuteService:
     def plan(self, actions):
+        device = ""
         for action in actions:
             device, action_type, body = action.split(":")
             response = requests.get(f"{os.getenv('SIMULATOR_HOST')}/{device}/status")
@@ -20,7 +21,10 @@ class PlanExecuteService:
                 write_log(
                     f"Action performed on {device} and the result is {action_result}."
                 )
-                return device, response.json()["status"]
+                if action_result == "success":
+                    return device, response.json()["status"]
+                if action_result == "fail":
+                    return device, "fail"
         write_log(f"No device available to execute the actions specified.")
 
         return device, "fail"

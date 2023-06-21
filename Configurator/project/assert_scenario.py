@@ -34,6 +34,11 @@ def assert_scenario(adaptation_scenarios, exchange):
                 )
             sleep(1)
 
+        results.append(
+            requests.get(
+                f"{os.getenv('OBSERVER_HOST')}/get_adaptation_status"
+            ).status_code
+        )
         if results.count(200) == len(results):
             print(colored(f"[SUCCESS] Scenario {scenario_name} passed.", "green"))
         else:

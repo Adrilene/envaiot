@@ -11,6 +11,7 @@ from .utils import write_log
 effector = None
 device, curent_status = None, None
 load_dotenv()
+adaptation_status = False
 
 
 @app.route("/index", methods=["GET"])
@@ -27,7 +28,7 @@ def configure():
 
 @app.route("/adapt", methods=["GET"])
 def adapt():
-    global effector, device, current_status
+    global effector, device, current_status, adaptation_status
 
     scenario = request.args.get("scenario")
     adapt_type = request.args.get("adapt_type")
@@ -36,8 +37,9 @@ def adapt():
 
     device, current_status = effector.adapt(scenario, adapt_type)
     if current_status == "fail":
-        return jsonify("Effector Failed"), 500
+        return jsonify("Effector Failed"), 400
 
+    adaptation_status = True
     return jsonify("Effector Successful"), 200
 
 
@@ -52,3 +54,4 @@ def return_to_previous_state():
         return jsonify("Returned to previous state")
 
     return jsonify("Failed when returning to previous state"), 500
+
