@@ -158,3 +158,8 @@ def validate_scenario():
         sleep(2)
 
     return send_file(f'../{os.getenv("LOGS_PATH")}', as_attachment=True)
+
+
+@app.route("/get_logs", methods=["GET"])
+def get_logs():
+    return send_file(f'{os.getenv("LOGS_PATH")}', as_attachment=True)
