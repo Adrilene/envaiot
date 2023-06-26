@@ -1,17 +1,19 @@
 import os
-import requests
-from dotenv import load_dotenv
-from termcolor import colored
 from time import sleep
 
+import requests
+from dotenv import load_dotenv
+
+from .utils import write_log
 
 load_dotenv()
 
 
-def assert_scenario(adaptation_scenarios, exchange):
+def assert_scenario(adaptation_scenarios):
+    msg = []
     for scenario_name in adaptation_scenarios.keys():
         results = []
-        print(f"Asserting scenario {scenario_name}")
+        write_log(f"Asserting scenario {scenario_name}...")
         for scenario in adaptation_scenarios[scenario_name]:
             message = scenario
             if "receiver" in scenario:
@@ -39,7 +41,14 @@ def assert_scenario(adaptation_scenarios, exchange):
                 f"{os.getenv('OBSERVER_HOST')}/get_adaptation_status"
             ).status_code
         )
+
+        result = ""
         if results.count(200) == len(results):
-            print(colored(f"[SUCCESS] Scenario {scenario_name} passed.", "green"))
+            result = f"[SUCCESS] Scenario {scenario_name} passed."
         else:
-            print(colored(f"[FAILED] Scenario {scenario_name} failed.", "red"))
+            result = f"[FAILED] Scenario {scenario_name} failed."
+
+        write_log(result)
+        msg.append(result)
+
+    return msg

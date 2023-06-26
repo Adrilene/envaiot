@@ -25,7 +25,6 @@ def index():
 
 @app.route("/configure_simulator", methods=["POST"])
 def configure_simulator():
-
     configuration = dict(request.json)
     print(f"Starting {configuration['project']}...")
     errors = validate_simulator(configuration)
@@ -87,7 +86,6 @@ def configure_adapter():
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
-
     configuration = dict(request.json)
     write_log(f"Starting {configuration['project']}...")
     pool = Pool(1)
@@ -129,18 +127,17 @@ def configure_all():
         and result["Observer"].status_code == 200
         and result["Effector"].status_code == 200
     ):
-
         write_log(f"Components configured:")
         write_log(f"Simulator: {simulator_configuration}")
         write_log(f"Obsever: {observer_configuration}")
         write_log(f"Effector: {effector_configuration}")
-        
-        assert_scenario(
-            configuration["scenarios"]["adaptation"],
-            get_exchange_name(configuration["project"])
-        )
 
-        return jsonify("All things set!")
+        return jsonify(
+            assert_scenario(
+                configuration["scenarios"]["adaptation"],
+                get_exchange_name(configuration["project"]),
+            )
+        )
 
     response = {}
     for key, value in result.items():
