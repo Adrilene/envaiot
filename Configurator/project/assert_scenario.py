@@ -18,7 +18,7 @@ def assert_scenario(adaptation_scenarios):
             message = scenario
             if "receiver" in scenario:
                 message["to"] = scenario["receiver"]
-                message["body"] = ""
+                message["body"] = scenario["body"] if scenario["body"] else ""
                 receiver = message.pop("receiver")
                 results.append(
                     requests.post(
@@ -34,7 +34,7 @@ def assert_scenario(adaptation_scenarios):
                         json=message,
                     ).status_code
                 )
-            sleep(1)
+            sleep(len(adaptation_scenarios[scenario_name]))
 
         results.append(
             requests.get(
