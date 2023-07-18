@@ -88,6 +88,10 @@ def configure_adapter():
 def configure_all():
     configuration = dict(request.json)
     write_log(f"Starting {configuration['project']}...")
+    errors_simulator = validate_simulator(configuration)
+
+    if errors_simulator:
+        return jsonify(errors_simulat), 400
     pool = Pool(1)
 
     future_response = []
@@ -99,6 +103,12 @@ def configure_all():
         "resources": configuration["resources"],
         "communication": configuration["communication"],
     }
+
+    errors_adapater = validate_adapter(configuration)
+
+    if errors_adapater:
+        return jsonify(errors_adapater), 400
+
     result["Simulator"] = requests.post(
         f"{os.getenv('SIMULATOR_HOST')}/configure",
         json=simulator_configuration,
@@ -132,7 +142,8 @@ def configure_all():
         write_log(f"Obsever: {observer_configuration}")
         write_log(f"Effector: {effector_configuration}")
 
-        return jsonify(assert_scenario(configuration["scenarios"]["adaptation"]))
+        # return jsonify(assert_scenario(configuration["scenarios"]["adaptation"]))
+        return jsonify("ok"), 200
 
     response = {}
     for key, value in result.items():
@@ -143,16 +154,7 @@ def configure_all():
 
 @app.route("/validate_scenario", methods=["POST"])
 def validate_scenario():
-    scenarios = list(request.json)
-    for scenario in scenarios:
-        requests.post(
-            f"{os.getenv('SIMULATOR_HOST')}/{scenario['from']}/send_message",
-            json=scenario["message"],
-        )
-
-        sleep(2)
-
-    return send_file(f'../{os.getenv("LOGS_PATH")}', as_attachment=True)
+    return jsonify(assert_scenario(request.json))
 
 
 @app.route("/get_logs", methods=["GET"])
