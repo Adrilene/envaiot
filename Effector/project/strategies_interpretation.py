@@ -65,6 +65,6 @@ def strategies_to_dict(strategies):
 
 
 # actions_dict = strategies_to_dict(
-#     "IF ACOn THEN ON AirConditioner STATUS on OTHERWISE ON Manager MESSAGE 'Could not turn on the air conditioner' IF ACOff THEN ON AirConditioner STATUS off OTHERWISE ON Manager MESSAGE 'Could not turn off the air conditioner'"
+#     "IF ACOn THEN ON AirConditioner STATUS on OTHERWISE ON Manager MESSAGE 'Could not turn on the air conditioner' IF ACOff THEN ON AirConditioner STATUS off OTHERWISE ON Manager MESSAGE 'Could not turn off the air conditioner' IF LightHumidity THEN ON Windows STATUS open OTHERWISE ON Lamp STATUS on ON Humidifier STATUS on"
 # )
 # print(actions_dict)

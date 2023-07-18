@@ -9,7 +9,6 @@ class Effector(PlanExecuteService):
         self.strategies = strategies_to_dict(strategies)
 
     def adapt(self, scenario, adapt_type):
-
         if scenario not in self.strategies.keys():
             write_log(f"{scenario} is not configured.\n")
             return "Scenario not configured."

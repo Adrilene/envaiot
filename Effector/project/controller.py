@@ -28,15 +28,20 @@ def configure():
 
 @app.route("/adapt", methods=["GET"])
 def adapt():
-    global effector, device, current_status, adaptation_status
+    global effector, device, current_status, adaptation_status, result
 
     scenario = request.args.get("scenario")
     adapt_type = request.args.get("adapt_type")
 
     write_log(f"Adapting {adapt_type} for {scenario}.")
 
-    device, current_status = effector.adapt(scenario, adapt_type)
-    if current_status == "fail":
+    print(f"ADAPT: {scenario} - {adapt_type}")
+    results = effector.adapt(scenario, adapt_type)
+    count_fail = 0
+    for result in results:
+        if result[1] == "fail":
+            count_fail += 1
+    if count_fail > 0:
         return jsonify("Effector Failed"), 400
 
     adaptation_status = True
@@ -47,11 +52,10 @@ def adapt():
 def return_to_previous_state():
     global effector, device, current_status
 
-    write_log(f"Returning {device} to {current_status}...\n")
-    response = effector.execute(device, current_status)
+    responses = []
+    for result in results:
+        if result[1] != "fail":
+            write_log(f"Returning {result[0]} to {result[1]}...\n")
+            responses.append(effector.execute(result[0], result[1]))
 
-    if response == "success":
-        return jsonify("Returned to previous state")
-
-    return jsonify("Failed when returning to previous state"), 500
-
+    return jsonify(responses)
