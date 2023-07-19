@@ -41,12 +41,16 @@ def status(device_name):
     current_device = get_current_device(device_name, devices)
 
     if not current_device:
+        write_log(f"From request to change status: Device Not Found {device_name}")
         return jsonify({"Error": f"Device Not Found {device_name}"}), 400
 
     if request.method == "GET":
         return current_device.get_status()
 
     if dict(request.json)["new_status"] not in current_device.status:
+        write_log(
+            f"From request to change status: Status not available for device {device_name}"
+        )
         return jsonify(f"Status not available for device {current_device}"), 400
 
     new_status = dict(request.json)["new_status"]
