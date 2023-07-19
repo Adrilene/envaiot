@@ -13,40 +13,27 @@ class MonitorAnalyseService:
         return False
 
     def compare_scenarios(self, current_scenario, adaptation_scenario):
-        equal_number = 0
-
-        for key in current_scenario.keys():
-            if key in adaptation_scenario:
-                if current_scenario[key] == adaptation_scenario[key]:
-                    equal_number += 1
-
-        if equal_number == len(adaptation_scenario.keys()):
+        if current_scenario == adaptation_scenario:
             return True
-        return False
+
+        for curr_scen in current_scenario:
+            if curr_scen not in adaptation_scenario:
+                return False
+
+        if len(current_scenario) > len(adaptation_scenario):
+            return "uncertainty"
+
+        return "wait"
 
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
         for scenario in adaptation_scenario:
-            if len(current_scenario) < len(adaptation_scenario[scenario]):
-                for i in range(len(current_scenario)):
-                    if self.compare_scenarios(
-                        current_scenario[i], adaptation_scenario[scenario][i]
-                    ):
-                        return "wait"
-            if len(current_scenario) >= len(adaptation_scenario[scenario]):
-                count = 0
-                for i in range(len(current_scenario)):
-                    if i >= len(adaptation_scenario[scenario]):
-                        break
-                    if self.compare_scenarios(
-                        current_scenario[i], adaptation_scenario[scenario][i]
-                    ):
-                        count += 1
-                        continue
-                    break
-                if count == len(adaptation_scenario[scenario]):
-                    return scenario
+            result = self.compare_scenarios(
+                current_scenario, adaptation_scenario[scenario]
+            )
+            if not result:
+                continue
 
-                if len(current_scenario) > len(adaptation_scenario[scenario]):
-                    return "uncertainty"
+            if result == True:
+                return scenario
 
-        return False
+            return result

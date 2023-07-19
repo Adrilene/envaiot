@@ -34,7 +34,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         adaptation_scenario = ""
         has_adapted = False
         has_adapted_uncertainty = False
-        self.adaptation_status = False
 
         CommunicationService.__init__(
             self, get_exchange_name(project_name), communication["host"]
@@ -52,6 +51,8 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             self.channel,
         )
 
+        self.adaptation_status = False
+
     def run(self):
         print(f"[*] Starting Observer")
         self.channel.basic_consume(
@@ -59,7 +60,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             on_message_callback=self.callback,
             auto_ack=False,
         )
-
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, data):
@@ -109,10 +109,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             write_log(f"Adapted uncertainty for {adaptation_scenario}.")
 
                         else:
-                            msg_log = (
-                                f"Uncertainty for {adaptation_scenario} failed."
-                                f"Uncertainty for {adaptation_scenario} failed."
-                            )
+                            msg_log = f"Uncertainty for {adaptation_scenario} failed."
                             write_log(msg_log)
                             self.adaptation_status = False
                             print(colored("[FAILED]", "red"), msg_log)
@@ -177,5 +174,5 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             )
                             new_message.pop("sender")
                         new_scenarios["adaptation"][scenario_name].append(new_message)
-        print(new_scenarios)
+
         return new_scenarios
