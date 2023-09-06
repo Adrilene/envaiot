@@ -5,7 +5,6 @@ def check_devices_names(devices_names):
             not device[0].isupper()
             and device != device.lower()
             and device != device.upper()
-            and "_" not in device
         ):
             errors.append(f"{device} is not a valid device name")
 
@@ -39,10 +38,7 @@ def check_senders(resources):
 def validate_simulator(configuration):
     errors = []
     if "resources" not in configuration.keys():
-        return "Missing resources key"
-
-    if "communication" not in configuration.keys():
-        return "Missing communication key"
+        errors.append(f"Missing resources key") 
 
     errors_for_devices_names = check_devices_names(configuration["resources"].keys())
     errors_for_devices_keys = check_devices_keys(configuration["resources"])
@@ -56,6 +52,9 @@ def validate_simulator(configuration):
         errors_for_senders = check_senders(configuration["resources"])
         if errors_for_senders:
             errors.extend(errors_for_senders)
+    if "communication" not in configuration.keys():
+        return "Missing communication key"
+
 
     if "host" not in configuration["communication"].keys():
         errors.append("Missing host in communication configuration.")

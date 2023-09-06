@@ -4,7 +4,8 @@ def check_keys(scenarios):
     for scenario in scenarios.keys():
         if scenario == "normal":
             """if "sender" not in scenarios[scenario].keys() and "receiver" not in scenarios[scenario].keys():
-            errors.append(f"Missing 'sender' or 'receiver' key for {scenario} scenario")"""
+            errors.append(f"Missing 'sender' or 'receiver' key for {scenario} scenario")
+            """
             for item in scenarios[scenario]:
                 if "type" not in item.keys():
                     errors.append(f"Missing 'type' key for {scenario} scenario")
@@ -12,11 +13,15 @@ def check_keys(scenarios):
         elif scenario == "adaptation":
             for key, value in scenarios[scenario].items():
                 for action in value:
-                    if "sender" not in action.keys() or "receiver" not in action.keys():
-                        errors.append(f"Missing 'sender' key for {key} scenario")
                     if "type" not in action.keys():
                         errors.append(f"Missing 'type' key for {key} scenario")
-
+                    if "sender" not in action.keys():
+                        if "receiver" not in action.keys():
+                            errors.append(
+                                f"Missing 'sender' or 'receiver' key for {key} scenario"
+                            )
+                        continue
+                    continue
     return errors
 
 
@@ -37,7 +42,7 @@ def check_scenarios_names(scenarios_names):
 
 def check_strategies(strategies, scenarios):
     errors = []
-    keywords = ["IF", "THEN", "ON", "STATUS"]
+    keywords = ["IF", "THEN", "ON", "STATUS", "MESSAGE"]
 
     for keyword in keywords:
         if keyword not in strategies:

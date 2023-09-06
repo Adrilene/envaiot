@@ -13,6 +13,7 @@ def assert_scenario(adaptation_scenarios):
     msg = []
     for scenario_name in adaptation_scenarios.keys():
         results = []
+        count = 1
         write_log(f"Asserting scenario {scenario_name}...")
         for scenario in adaptation_scenarios[scenario_name]:
             message = scenario
@@ -34,8 +35,11 @@ def assert_scenario(adaptation_scenarios):
                         json=message,
                     ).status_code
                 )
-            sleep(len(adaptation_scenarios[scenario_name]))
 
+            count += 1
+            sleep(count + 1)
+
+        sleep(5)
         results.append(
             requests.get(
                 f"{os.getenv('OBSERVER_HOST')}/get_adaptation_status"
