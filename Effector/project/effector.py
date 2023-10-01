@@ -11,6 +11,6 @@ class Effector(PlanExecuteService):
     def adapt(self, scenario, adapt_type):
         if scenario not in self.strategies.keys():
             write_log(f"{scenario} is not configured.\n")
-            return "Scenario not configured."
+            return "Scenario not configured.", "fail"
 
         return self.plan(self.strategies[scenario][adapt_type])
