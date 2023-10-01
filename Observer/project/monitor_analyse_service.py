@@ -28,7 +28,7 @@ class MonitorAnalyseService:
     def analyse_adaptation_scenario(self, current_scenario, adaptation_scenario):
         for scenario in adaptation_scenario:
             result = self.compare_scenarios(
-                current_scenario, adaptation_scenario[scenario]
+                current_scenario, adaptation_scenario[scenario]["scenario"]
             )
             if not result:
                 continue
