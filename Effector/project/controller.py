@@ -38,6 +38,7 @@ def adapt():
     results = effector.adapt(scenario, adapt_type)
 
     count_fail = 0
+    print(f"RESULTS: {results}")
     for result in results:
         if result[1] == "fail":
             count_fail += 1
