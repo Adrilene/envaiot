@@ -1,13 +1,13 @@
 import os
 from multiprocessing.dummy import Pool
-from time import sleep
 
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 from flask import jsonify, request, send_file
 from project import app
 
-from .utils import write_log, get_exchange_name
+from .utils import write_log
 from .validator_adapter import validate_adapter
 from .validator_simulator import validate_simulator
 from .assert_scenario import assert_scenario
@@ -86,6 +86,12 @@ def configure_adapter():
 
 @app.route("/configure_all", methods=["POST"])
 def configure_all():
+    if os.path.exists(f"../{os.getenv('LOGS_PATH')}"):
+        now = datetime.now()
+        new_name = f"../{os.getenv('LOGS_PATH')}".replace(
+            "logs", f"logs_{now.strftime('%d%m%Y%H%M')}"
+        )
+        os.rename(f"../{os.getenv('LOGS_PATH')}", new_name)
     configuration = dict(request.json)
     write_log(f"Starting {configuration['project']}...")
     errors_simulator = validate_simulator(configuration)
