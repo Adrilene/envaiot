@@ -9,9 +9,10 @@ from .effector import Effector
 from .utils import write_log
 
 effector = None
-device, curent_status = None, None
+device, current_status = None, None
 load_dotenv()
 adaptation_status = False
+results = []
 
 
 @app.route("/index", methods=["GET"])
@@ -28,15 +29,14 @@ def configure():
 
 @app.route("/adapt", methods=["GET"])
 def adapt():
-    global effector, device, current_status, adaptation_status, result
+    global effector, device, current_status, adaptation_status, results
 
     scenario = request.args.get("scenario")
     adapt_type = request.args.get("adapt_type")
 
-    write_log(f"Adapting {adapt_type} for {scenario}.")
-
-    print(f"ADAPT: {scenario} - {adapt_type}")
+    write_log(f"Applying {adapt_type} action for {scenario}.")
     results = effector.adapt(scenario, adapt_type)
+
     count_fail = 0
     for result in results:
         if result[1] == "fail":
@@ -50,12 +50,20 @@ def adapt():
 
 @app.route("/return_to_previous", methods=["GET"])
 def return_to_previous_state():
-    global effector, device, current_status
+    global effector, device, current_status, results
 
     responses = []
     for result in results:
         if result[1] != "fail":
-            write_log(f"Returning {result[0]} to {result[1]}...\n")
-            responses.append(effector.execute(result[0], result[1]))
-
-    return jsonify(responses)
+            if result[1] == "STATUS":
+                write_log(f"Returning {result[0]} to {result[1]}...\n")
+                result = effector.execute(result[0], result[1], result[2])
+                responses.append(result)
+                msg_log = f"Cautious adaptation result is {result}"
+                write_log(msg_log)
+                return jsonify(msg_log), 200
+            else:
+                write_log(
+                    f"Not possible to apply cautious on adaptation action of the type {result[1]}\n"
+                )
+                return jsonify("error"), 400

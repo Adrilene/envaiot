@@ -23,7 +23,7 @@ class PlanExecuteService:
                     f"Action performed on {device} and the result is {action_result}."
                 )
                 if action_result == "success":
-                    results.append((device, response.json()["status"]))
+                    results.append((device, action_type, response.json()["status"]))
 
                 if action_result == "fail":
                     results.append((device, "fail"))
