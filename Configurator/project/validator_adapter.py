@@ -12,7 +12,9 @@ def check_keys(scenarios):
 
         elif scenario == "adaptation":
             for key, value in scenarios[scenario].items():
-                for action in value:
+                if "cautious" not in value.keys():
+                    errors.append(f"Missing 'cautious' key for {key}")
+                for action in value["scenario"]:
                     if "type" not in action.keys():
                         errors.append(f"Missing 'type' key for {key} scenario")
                     if "sender" not in action.keys():

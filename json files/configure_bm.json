@@ -44,19 +44,22 @@
 			}
 		],
 		"adaptation": {
-			"TVBlocked": [
-				{
-					"receiver": "SmartTV",
-					"type": "notification"
-				},
-				{
-					"sender": "SmartTV",
-					"type": "status",
-					"body": {
-						"block": true
+			"TVBlocked": {
+				"cautious": true,
+				"scenario": [
+					{
+						"receiver": "SmartTV",
+						"type": "notification"
+					},
+					{
+						"sender": "SmartTV",
+						"type": "status",
+						"body": {
+							"block": true
+						}
 					}
-				}
-			]
+				]
+			}
 		}
 	},
 	"strategies": "IF TVBlocked THEN ON SmartTV STATUS available OTHERWISE ON Assistant MESSAGE 'The baby needs attention' ON SmartLamp STATUS blink"
