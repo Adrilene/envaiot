@@ -57,24 +57,30 @@
 			}
 		],
 		"adaptation": {
-			"HighAlcohol": [
-				{
-					"sender": "AlcoholSensor",
-					"type": "status",
-					"body": {
-						"AlcoholLevel": "high"
+			"HighAlcohol": {
+				"cautious": true,
+				"scenario": [
+					{
+						"sender": "AlcoholSensor",
+						"type": "status",
+						"body": {
+							"AlcoholLevel": "high"
+						}
 					}
-				}
-			],
-			"HighSpeed": [
-				{
-					"sender": "SpeedSensor",
-					"type": "status",
-					"body": {
-						"Speed": "high"
+				]
+			}
+			"HighSpeed": {
+				"cautious": true,
+				"scenario": [
+					{
+						"sender": "SpeedSensor",
+						"type": "status",
+						"body": {
+							"Speed": "high"
+						}
 					}
-				}
-			]
+				]
+			}
 		}
 	},
 	"strategies": "IF HighAlcohol THEN ON Steering STATUS assistance OTHERWISE ON Manager MESSAGE 'Send message to emergency contact' IF HighSpeed THEN ON Brake STATUS assistance OTHERWISE ON Manager MESSAGE 'Send message to emergency contact'"

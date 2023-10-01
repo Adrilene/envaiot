@@ -53,63 +53,72 @@
 			}
 		],
 		"adaptation": {
-			"ACOn": [
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"presence": true
+			"ACOn": {
+				"cautious": false,
+				"scenario": [
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"presence": true
+						}
+					},
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"temperature": 30,
+							"status": "off"
+						}
 					}
-				},
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"temperature": 30,
-						"status": "off"
+				]
+			},
+			"ACOff": {
+				"cautious": false,
+				"scenario": [
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"presence": true
+						}
+					},
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"temperature": 20,
+							"status": "on"
+						}
 					}
-				}
-			],
-			"ACOff": [
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"presence": true
+				]
+			},
+			"LightHumidity": {
+				"cautious": false,
+				"scenario": [
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"presence": true
+						}
+					},
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"luminosity": "low"
+						}
+					},
+					{
+						"receiver": "Manager",
+						"type": "status",
+						"body": {
+							"humidity": "low"
+						}
 					}
-				},
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"temperature": 20,
-						"status": "on"
-					}
-				}
-			],
-			"LightHumidity": [
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"presence": true
-					}
-				},
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"luminosity": "low"
-					}
-				},
-				{
-					"receiver": "Manager",
-					"type": "status",
-					"body": {
-						"humidity": "low"
-					}
-				}
-			]
+				]
+			}
 		}
 	},
 	"strategies": "IF ACOn THEN ON AirConditioner STATUS on OTHERWISE ON Manager MESSAGE 'Could not turn on the air conditioner' IF ACOff THEN ON AirConditioner STATUS off OTHERWISE ON Manager MESSAGE 'Could not turn off the air conditioner' IF LightHumidity THEN ON Windows STATUS open OTHERWISE ON Lamp STATUS on ON Humidifier STATUS on"
