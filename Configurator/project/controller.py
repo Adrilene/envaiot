@@ -142,8 +142,7 @@ def configure_all():
         write_log(f"Obsever: {observer_configuration}")
         write_log(f"Effector: {effector_configuration}")
 
-        # return jsonify(assert_scenario(configuration["scenarios"]["adaptation"]))
-        return jsonify("ok"), 200
+        return jsonify(assert_scenario(configuration["scenarios"]))
 
     response = {}
     for key, value in result.items():
