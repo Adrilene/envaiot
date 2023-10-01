@@ -2,7 +2,7 @@ import json
 import os
 from copy import deepcopy
 from threading import Thread
-from termcolor import colored
+from time import sleep
 
 import requests
 from dotenv import load_dotenv
@@ -68,11 +68,16 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
         write_log(f"Observer received: {data} from {method.routing_key}.")
 
-        if self.analyse_normal_scenario(current_scenario, self.scenarios["normal"]):
+        scenarios_sequence.append(current_scenario)
+        analysis_normal = self.analyse_normal_scenario(
+            scenarios_sequence, self.scenarios["normal"]
+        )
+
+        if analysis_normal == True:
+            write_log(f"System is under a normal scenario.")
             if has_adapted or has_adapted_uncertainty:
                 msg_log = f"Adaptation worked successfully."
                 write_log(msg_log)
-
                 if self.scenarios["adaptation"][adaptation_scenario]["cautious"]:
                     write_log(f"Resetting to previous state")
                     response = requests.get(
@@ -82,14 +87,11 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                         write_log("Resource reset successfully")
                     else:
                         write_log(response.json()[0])
-
-                self.reset_values()
-            write_log(f"System is under a normal scenario.")
+            self.reset_values()
+        elif analysis_normal == "wait":
+            pass
 
         else:
-            if len(scenarios_sequence) == 0:
-                self.reset_values()
-            scenarios_sequence.append(current_scenario)
             adaptation = self.analyse_adaptation_scenario(
                 scenarios_sequence, self.scenarios["adaptation"]
             )
@@ -102,7 +104,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                     )
                     has_adapted = True
                     if response.status_code == 200:
-                        write_log(f"Adapted for {adaptation_scenario}.")
+                        write_log(f"Adapted for {adaptation_scenario} successfully.")
                         scenarios_sequence = []
 
                     else:
@@ -120,22 +122,22 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             msg_log = f"Uncertainty for {adaptation_scenario} failed."
                             write_log(msg_log)
 
-                else:
-                    write_log(f"Uncertainty detected for {adaptation_scenario}.")
-                    response = requests.get(
-                        f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
-                    )
-                    has_adapted_uncertainty = True
-                    if response.status_code == 200:
-                        msg_log = f"Adapted uncertainty for {adaptation_scenario}."
-                        write_log(msg_log)
-                        scenarios_sequence = []
+                # else:
+                #     write_log(f"Uncertainty detected for {adaptation_scenario}.")
+                #     response = requests.get(
+                #         f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
+                #     )
+                #     has_adapted_uncertainty = True
+                #     if response.status_code == 200:
+                #         msg_log = f"Adapted uncertainty for {adaptation_scenario}."
+                #         write_log(msg_log)
+                #         scenarios_sequence = []
 
-                    else:
-                        msg_log = f"Uncertainty for {adaptation_scenario} failed."
-                        write_log(msg_log)
+                #     else:
+                #         msg_log = f"Uncertainty for {adaptation_scenario} failed."
+                #         write_log(msg_log)
 
-                    scenarios_sequence = []
+                #     scenarios_sequence = []
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
