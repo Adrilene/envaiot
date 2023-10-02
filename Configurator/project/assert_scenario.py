@@ -58,7 +58,7 @@ def assert_scenario(scenarios):
             count += 1
             sleep(count + 1)
 
-        sleep(5)
+        sleep(3)
 
         results.append(analyse_result())
 
