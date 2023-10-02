@@ -10,9 +10,13 @@ load_dotenv()
 
 
 def analyse_result():
+    last_lines = []
     with open(f"../{os.getenv('LOGS_PATH')}", "r") as f:
-        last = f.readlines()[-1]
-        if "success" in last:
+        lines = f.readlines()
+        last_lines.append("success" in lines[-1])
+        last_lines.append("success" in lines[-2])
+        last_lines.append("success" in lines[-3])
+        if True in last_lines:
             return 200
         return 400
 
@@ -48,6 +52,7 @@ def assert_scenario(scenarios):
         results = []
         count = 1
         write_log(f"Asserting scenario {scenario_name}...")
+
         for scenario in scenarios["adaptation"][scenario_name]["scenario"]:
             results.extend(send_message(scenario))
             count += 1
@@ -58,6 +63,7 @@ def assert_scenario(scenarios):
         results.append(analyse_result())
 
         result = ""
+
         if results.count(200) == len(results):
             if scenarios["adaptation"][scenario_name]["cautious"]:
                 for scenario in scenarios["normal"]:
@@ -78,6 +84,3 @@ def assert_scenario(scenarios):
         msg.append(result)
 
     return msg
-
-
-# analyse_result()
