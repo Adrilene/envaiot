@@ -164,4 +164,7 @@ def validate_scenario():
 
 @app.route("/get_logs", methods=["GET"])
 def get_logs():
-    return send_file(f'{os.getenv("LOGS_PATH")}', as_attachment=True)
+    return send_file(
+        f'{os.getcwd().split("Configurator")[0]}{os.getenv("LOGS_PATH")}',
+        as_attachment=True,
+    )
