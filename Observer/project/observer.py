@@ -78,6 +78,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             if has_adapted or has_adapted_uncertainty:
                 msg_log = f"Adaptation worked successfully."
                 write_log(msg_log)
+                print(f"CAUTIOUS: {self.scenarios['adaptation'][adaptation_scenario]}")
                 if self.scenarios["adaptation"][adaptation_scenario]["cautious"]:
                     write_log(f"Resetting to previous state")
                     response = requests.get(
@@ -95,7 +96,10 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             adaptation = self.analyse_adaptation_scenario(
                 scenarios_sequence, self.scenarios["adaptation"]
             )
-            if adaptation != "wait" and adaptation != False:
+            print(f"SCENARIOS SEQUENCE: {scenarios_sequence}")
+            print(f"ADAPTATION RESULT: {adaptation}")
+            if adaptation in self.scenarios["adaptation"].keys():
+                print("ENTREI")
                 if adaptation != "uncertainty":
                     write_log(f"Scenario {adaptation} detected.")
                     adaptation_scenario = adaptation
@@ -115,7 +119,9 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                         )
                         has_adapted_uncertainty = True
                         if response.status_code == 200:
-                            write_log(f"Adapted uncertainty for {adaptation_scenario}.")
+                            write_log(
+                                f"Adapted uncertainty for {adaptation_scenario} successfully."
+                            )
                             scenarios_sequence = []
 
                         else:
@@ -146,7 +152,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
 
         has_adapted, has_adapted_uncertainty = False, False
         scenarios_sequence = []
-        adaptation_scenario = ""
 
     def get_scenarios(self, scenarios):
         new_scenarios = deepcopy(scenarios)

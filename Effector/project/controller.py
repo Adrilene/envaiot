@@ -57,7 +57,7 @@ def return_to_previous_state():
     for result in results:
         if result[1] != "fail":
             if result[1] == "STATUS":
-                write_log(f"Returning {result[0]} to {result[1]}...\n")
+                write_log(f"Returning {result[0]} to {result[2]}...")
                 result = effector.execute(result[0], result[1], result[2])
                 responses.append(result)
                 msg_log = f"Cautious adaptation result is {result}"
@@ -65,6 +65,6 @@ def return_to_previous_state():
                 return jsonify(msg_log), 200
             else:
                 write_log(
-                    f"Not possible to apply cautious on adaptation action of the type {result[1]}\n"
+                    f"Not possible to apply cautious on adaptation action of the type {result[1]}"
                 )
                 return jsonify("error"), 400
