@@ -96,24 +96,28 @@ def configure_all():
     write_log(f"Starting {configuration['project']}...")
     errors_simulator = validate_simulator(configuration)
 
-    if errors_simulator:
-        return jsonify(errors_simulat), 400
-    pool = Pool(1)
+    # if errors_simulator:
+    #     return jsonify(errors_simulator), 400
 
-    future_response = []
+    errors_adapater = validate_adapter(configuration)
 
-    future_response.append(pool)
+    if errors_adapater or errors_simulator:
+        return (
+            jsonify(
+                {
+                    "errors simulator modeling": errors_simulator,
+                    "errors adapter modeling": errors_adapater,
+                }
+            ),
+            400,
+        )
+
     result = {}
     simulator_configuration = {
         "project": configuration["project"],
         "resources": configuration["resources"],
         "communication": configuration["communication"],
     }
-
-    errors_adapater = validate_adapter(configuration)
-
-    if errors_adapater:
-        return jsonify(errors_adapater), 400
 
     result["Simulator"] = requests.post(
         f"{os.getenv('SIMULATOR_HOST')}/configure",
