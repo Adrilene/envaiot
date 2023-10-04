@@ -76,7 +76,6 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         if analysis_normal == True:
             write_log(f"System is under a normal scenario.")
             if has_adapted or has_adapted_uncertainty:
-                write_log(msg_log)
                 if self.scenarios["adaptation"][adaptation_scenario]["cautious"]:
                     write_log(f"Resetting to previous state")
                     response = requests.get(
@@ -93,6 +92,8 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             adaptation = self.analyse_adaptation_scenario(
                 scenarios_sequence, self.scenarios["adaptation"]
             )
+            print(f"SCENARIOS: {scenarios_sequence}")
+            print(f"ADAPTATION RESULT: {adaptation}")
             if adaptation in self.scenarios["adaptation"].keys():
                 if adaptation != "uncertainty":
                     write_log(f"Scenario {adaptation} detected.")
