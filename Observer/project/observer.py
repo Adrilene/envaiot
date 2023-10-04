@@ -76,9 +76,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
         if analysis_normal == True:
             write_log(f"System is under a normal scenario.")
             if has_adapted or has_adapted_uncertainty:
-                msg_log = f"Adaptation worked successfully."
                 write_log(msg_log)
-                print(f"CAUTIOUS: {self.scenarios['adaptation'][adaptation_scenario]}")
                 if self.scenarios["adaptation"][adaptation_scenario]["cautious"]:
                     write_log(f"Resetting to previous state")
                     response = requests.get(
@@ -91,15 +89,11 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
             self.reset_values()
         elif analysis_normal == "wait":
             pass
-
         else:
             adaptation = self.analyse_adaptation_scenario(
                 scenarios_sequence, self.scenarios["adaptation"]
             )
-            print(f"SCENARIOS SEQUENCE: {scenarios_sequence}")
-            print(f"ADAPTATION RESULT: {adaptation}")
             if adaptation in self.scenarios["adaptation"].keys():
-                print("ENTREI")
                 if adaptation != "uncertainty":
                     write_log(f"Scenario {adaptation} detected.")
                     adaptation_scenario = adaptation
@@ -117,6 +111,7 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                         response = requests.get(
                             f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
                         )
+                        scenarios_sequence = []
                         has_adapted_uncertainty = True
                         if response.status_code == 200:
                             write_log(
@@ -128,22 +123,8 @@ class Observer(CommunicationService, MonitorAnalyseService, Thread):
                             msg_log = f"Uncertainty for {adaptation_scenario} failed."
                             write_log(msg_log)
 
-                # else:
-                #     write_log(f"Uncertainty detected for {adaptation_scenario}.")
-                #     response = requests.get(
-                #         f"{os.getenv('EFFECTOR_HOST')}/adapt?scenario={adaptation_scenario}&adapt_type=uncertainty"
-                #     )
-                #     has_adapted_uncertainty = True
-                #     if response.status_code == 200:
-                #         msg_log = f"Adapted uncertainty for {adaptation_scenario}."
-                #         write_log(msg_log)
-                #         scenarios_sequence = []
-
-                #     else:
-                #         msg_log = f"Uncertainty for {adaptation_scenario} failed."
-                #         write_log(msg_log)
-
-                #     scenarios_sequence = []
+            elif adaptation == None:
+                scenarios_sequence = []
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
